@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Modul 5: FiSi Quiz (Softwareentwicklung)</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f1f5f9; --correct: #22c55e; --wrong: #ef4444; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; max-width: 800px; margin: auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px; margin-top: 10px; font-weight: bold; transition: background 0.3s; }
+        .btn:hover { background: #2563eb; }
+        .question-box { background: #334155; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid var(--accent); }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .option { background: #1e293b; border: 2px solid #475569; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .option:hover { border-color: var(--accent); background: #283548; }
+        .option.selected { border-color: var(--accent); background: #283548; }
+        .option.correct { border-color: var(--correct); background: rgba(34, 197, 94, 0.1); }
+        .option.wrong { border-color: var(--wrong); background: rgba(239, 68, 68, 0.1); }
+        .explanation { background: #020617; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 20px; border-radius: 0 8px 8px 0; display: none; }
+        .header-nav { margin-bottom: 20px; }
+        .score-display { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header-nav">
+            <button class="btn" onclick="window.location.href='../index.html'">← Menü</button>
+        </div>
+        <h1>Modul 5: FiSi Quiz (Softwareentwicklung)</h1>
+        <p>Dieses Quiz enthält Fragen speziell für Fachinformatiker Systemintegration (FiSi), basierend auf typischen Prüfungsfragen und Inhalten der Softwareentwicklung.</p>
+        
+        <div class="score-display">Frage <span id="current-q">1</span> von <span id="total-q">5</span> | Punkte: <span id="score">0</span></div>
+
+        <div id="quiz-container">
+            <div class="question-box">
+                <h3 id="question-text">Lade Frage...</h3>
+                <div class="options" id="options-container">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+            
+            <div id="explanation-box" class="explanation">
+                <strong>Erklärung:</strong> <span id="explanation-text"></span>
+            </div>
+
+            <button id="next-btn" class="btn" style="display: none;" onclick="nextQuestion()">Nächste Frage</button>
+        </div>
+
+        <div id="result-container" style="display: none; text-align: center;">
+            <h2>Quiz Beendet!</h2>
+            <p>Du hast <span id="final-score">0</span> von <span id="final-total">0</span> Fragen richtig beantwortet.</p>
+            <button class="btn" onclick="restartQuiz()">Quiz Neustarten</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Was ist ein wesentlicher Unterschied zwischen einem Lastenheft und einem Pflichtenheft?",
+                options: [
+                    "Das Lastenheft wird vom Auftragnehmer erstellt (WIE), das Pflichtenheft vom Auftraggeber (WAS).",
+                    "Das Lastenheft beschreibt die Gesamtheit der Forderungen des Auftraggebers (WAS), das Pflichtenheft beschreibt die Realisierungsvorgaben des Auftragnehmers (WIE).",
+                    "Es gibt keinen Unterschied, beides sind Synonyme für dasselbe Dokument.",
+                    "Das Lastenheft enthält nur rechtliche Rahmenbedingungen, das Pflichtenheft nur technische."
+                ],
+                correctIndex: 1,
+                explanation: "Das Lastenheft (WAS soll gemacht werden?) wird vom Auftraggeber erstellt. Das Pflichtenheft (WIE soll es gemacht werden?) wird vom Auftragnehmer als Antwort auf das Lastenheft erstellt."
+            },
+            {
+                question: "Ein Programm soll automatisiert Aufgaben erledigen. Welche Aussage bezüglich Skriptsprachen (z.B. PowerShell, Python) vs. Compilersprachen (z.B. C++, C#) ist korrekt?",
+                options: [
+                    "Skriptsprachen müssen vor der Ausführung in Maschinencode übersetzt werden, Compilersprachen werden zur Laufzeit interpretiert.",
+                    "Skriptsprachen sind plattformunabhängiger, da sie keinen Interpreter benötigen.",
+                    "Ein Vorteil von Skriptsprachen ist die direkte Ausführbarkeit ohne separaten Kompilierschritt. Ein Vorteil von Compilersprachen ist meist eine höhere Ausführungsgeschwindigkeit.",
+                    "Compilersprachen eignen sich besser für kleine, administrative Aufgaben, während Skriptsprachen nur für große Applikationen genutzt werden."
+                ],
+                correctIndex: 2,
+                explanation: "Skriptsprachen werden oft zur Laufzeit interpretiert (schnelles Testen, keine Kompilierung), während Compilersprachen vorher übersetzt werden müssen, was sie bei der Ausführung meist schneller macht."
+            },
+            {
+                question: "Sie sollen ein Content Management System (CMS) für ein Firmen-Wiki evaluieren. Welche dieser Funktionen ist eine typische Kernfunktion eines CMS?",
+                options: [
+                    "Kompilieren von Quellcode in Maschinensprache.",
+                    "Trennung von Inhalt (Content) und Darstellung (Design/Layout).",
+                    "Echtzeit-Routing von IP-Paketen im Netzwerk.",
+                    "Automatische Vergabe von IP-Adressen an Clients."
+                ],
+                correctIndex: 1,
+                explanation: "Ein Content Management System (CMS) zeichnet sich primär dadurch aus, dass es Autoren ermöglicht, Inhalte zu erstellen und zu verwalten, unabhängig vom grafischen Layout der Seite."
+            },
+            {
+                question: "Ein Logfile enthält das monatliche Netzwerk-Datenvolumen. Ein Skript soll User identifizieren, die mehr als 200% des Durchschnittswerts verbrauchen. Wenn der Durchschnitt bei 10 GiB liegt, ab welchem Wert wird ein User erfasst?",
+                options: [
+                    "Ab > 10 GiB",
+                    "Ab > 20 GiB",
+                    "Ab > 200 GiB",
+                    "Ab >= 10 GiB"
+                ],
+                correctIndex: 1,
+                explanation: "200% des Durchschnittswerts (10 GiB) entsprechen 20 GiB. Die Bedingung lautet 'mehr als 200%', also muss das Volumen größer als 20 GiB sein."
+            },
+            {
+                question: "Ein iterativer Algorithmus soll einen rekursiven ersetzen. Welches Datenstruktur-Konzept eignet sich am besten, um rekursive Funktionsaufrufe iterativ nachzubilden?",
+                options: [
+                    "Queue (Warteschlange)",
+                    "Stack (Keller/Stapel)",
+                    "Hash Table (Streuwerttabelle)",
+                    "Binary Search Tree (Binärer Suchbaum)"
+                ],
+                correctIndex: 1,
+                explanation: "Rekursion verwendet intern den Call-Stack des Betriebssystems. Um dies iterativ abzubilden, verwendet man typischerweise einen expliziten Stack (Stapel), um den Zustand der Aufrufe zu speichern."
+            },
+            {
+                question: "Wie viele nutzbare Host-IP-Adressen bietet ein /24 Subnetz (IPv4)?",
+                options: ["256", "255", "254", "128"],
+                correctIndex: 2,
+                explanation: "Ein /24 Subnetz hat 256 Adressen insgesamt. Abzüglich Netzwerkadresse (1) und Broadcastadresse (1) bleiben 254 nutzbare Host-Adressen."
+            },
+            {
+                question: "Auf welcher Schicht des OSI-Modells arbeitet ein Router primär?",
+                options: ["Schicht 1 (Physical Layer)", "Schicht 2 (Data Link Layer)", "Schicht 3 (Network Layer)", "Schicht 4 (Transport Layer)"],
+                correctIndex: 2,
+                explanation: "Ein Router arbeitet auf der Netzwerkschicht (Layer 3), da er IP-Adressen nutzt, um Pakete zwischen verschiedenen Netzwerken weiterzuleiten."
+            },
+            {
+                question: "Welches Protokoll der Transportschicht ist verbindungslos und bietet keine Garantie für die Datenzustellung?",
+                options: ["TCP", "IP", "UDP", "ICMP"],
+                correctIndex: 2,
+                explanation: "UDP (User Datagram Protocol) ist ein verbindungsloses Transportprotokoll ohne Bestätigungsmechanismen und damit schneller, aber unzuverlässiger als TCP."
+            },
+            {
+                question: "Was ist der primäre Vorteil von RAID 1?",
+                options: ["Höchste Speicherkapazität (Striping ohne Parität).", "Spiegelung der Daten für hohe Ausfallsicherheit (Mirroring).", "Kostengünstige Alternative zu SSDs.", "Automatische Datensicherung auf einen Cloud-Speicher."],
+                correctIndex: 1,
+                explanation: "RAID 1 spiegelt (Mirroring) Daten auf mindestens zwei Festplatten, was die Ausfallsicherheit erhöht, da eine Platte ausfallen kann, ohne dass Daten verloren gehen."
+            },
+            {
+                question: "Welcher Dienst ist für die Namensauflösung (z.B. www.google.com zu einer IP-Adresse) im Netzwerk verantwortlich?",
+                options: ["DHCP", "FTP", "DNS", "ARP"],
+                correctIndex: 2,
+                explanation: "DNS (Domain Name System) übersetzt menschenlesbare Hostnamen in IP-Adressen und umgekehrt."
+            },
+            {
+                question: "Ein Client sendet beim Systemstart einen DHCP-Discover-Broadcast. Was ist die typische Reihenfolge des DHCP-Prozesses?",
+                options: ["Discover, Request, Offer, Acknowledge", "Discover, Offer, Request, Acknowledge (DORA)", "Request, Discover, Acknowledge, Offer", "Offer, Request, Discover, Acknowledge"],
+                correctIndex: 1,
+                explanation: "Der DORA-Prozess: Discover (Client sucht Server), Offer (Server bietet IP an), Request (Client fordert IP an), Acknowledge (Server bestätigt)."
+            },
+            {
+                question: "Wie lang ist eine IPv6-Adresse in Bit?",
+                options: ["32 Bit", "64 Bit", "128 Bit", "256 Bit"],
+                correctIndex: 2,
+                explanation: "IPv6-Adressen sind 128 Bit lang und werden typischerweise in 8 Blöcken zu je 4 Hexadezimalzeichen dargestellt."
+            },
+            {
+                question: "Was ermöglicht ein VPN (Virtual Private Network)?",
+                options: ["Die physische Trennung von Servern im Rechenzentrum.", "Einen verschlüsselten, logischen Tunnel über ein unsicheres Netzwerk (z.B. Internet).", "Eine hardwarebasierte Firewall für lokale Netzwerke.", "Die automatische Zuweisung von dynamischen IP-Adressen."],
+                correctIndex: 1,
+                explanation: "Ein VPN ermöglicht eine sichere, verschlüsselte Verbindung (Tunneling) über öffentliche Netzwerke und verbindet entfernte Standorte oder Clients mit einem lokalen Netzwerk."
+            },
+            {
+                question: "Wozu dient ein VLAN (Virtual Local Area Network)?",
+                options: ["Zur logischen Segmentierung eines physischen Netzwerks auf Layer 2.", "Zur physischen Trennung von Netzwerken durch mehrere Router.", "Zum Verschlüsseln des Datenverkehrs zwischen Switches.", "Zur drahtlosen Verbindung von Endgeräten."],
+                correctIndex: 0,
+                explanation: "VLANs teilen ein physisches Switch-Netzwerk logisch in mehrere Broadcast-Domänen (auf Layer 2) auf, um Sicherheit und Performance zu erhöhen."
+            },
+            {
+                question: "Welches Verfahren verbirgt private IP-Adressen eines internen Netzwerks hinter einer einzigen öffentlichen IP-Adresse am Router?",
+                options: ["Routing", "NAT (Network Address Translation)", "Subnetting", "VLAN Tagging"],
+                correctIndex: 1,
+                explanation: "NAT übersetzt private IPs in öffentliche IPs (meist in der Form von PAT/Masquerading), damit Geräte aus dem lokalen Netz im Internet kommunizieren können."
+            },
+            {
+                question: "Eine Firewall prüft nicht nur Ports und IPs, sondern merkt sich auch den Zustand einer Verbindung. Wie nennt man dieses Konzept?",
+                options: ["Packet Filtering", "Stateless Inspection", "Stateful Packet Inspection (SPI)", "Proxy Filtering"],
+                correctIndex: 2,
+                explanation: "Stateful Packet Inspection merkt sich den Verbindungsstatus (z.B. TCP-Handshake). Antwortpakete zu einer von innen initiierten Verbindung werden so automatisch durchgelassen."
+            },
+            {
+                question: "Welches Protokoll wird primär zur Abfrage und Änderung von Informationen in Verzeichnisdiensten (wie Microsoft Active Directory) verwendet?",
+                options: ["LDAP", "SMTP", "SNMP", "RDP"],
+                correctIndex: 0,
+                explanation: "LDAP (Lightweight Directory Access Protocol) ist das Standardprotokoll, um auf Verzeichnisdienste wie das AD zuzugreifen."
+            },
+            {
+                question: "Was ist der Hauptzweck einer USV (Unterbrechungsfreie Stromversorgung)?",
+                options: ["Die Stromrechnung des Unternehmens zu senken.", "Hardware bei einem Stromausfall für eine begrenzte Zeit mit Energie zu versorgen, um sie sicher herunterzufahren.", "Gleichstrom in Wechselstrom für Netzwerke umzuwandeln.", "Netzwerkpakete bei einem Kabelbruch umzuleiten."],
+                correctIndex: 1,
+                explanation: "Eine USV (bzw. UPS) liefert bei Stromausfall temporär Energie aus Akkus, schützt vor Spannungsschwankungen und ermöglicht ein sauberes Herunterfahren der Server."
+            },
+            {
+                question: "Was ist der Unterschied zwischen einem inkrementellen und einem differentiellen Backup?",
+                options: ["Differentiell sichert alles seit dem letzten Vollbackup, Inkrementell sichert nur Änderungen seit dem letzten Backup (egal ob Voll- oder inkrementell).", "Es gibt keinen Unterschied, beides sind Synonyme.", "Inkrementell sichert das Betriebssystem, Differentiell die Nutzerdaten.", "Inkrementell benötigt mehr Speicherplatz als Differentiell."],
+                correctIndex: 0,
+                explanation: "Inkrementell: Sichert nur die Daten, die sich seit der letzten (inkrementellen) Sicherung geändert haben. Differentiell: Sichert alle Daten, die sich seit dem letzten Vollbackup geändert haben."
+            },
+            {
+                question: "Ein Hypervisor Typ 1 (Bare-Metal) unterscheidet sich von Typ 2 dadurch, dass er...",
+                options: ["... ein bereits installiertes Host-Betriebssystem zwingend benötigt.", "... direkt auf der Hardware des Servers installiert wird.", "... nur auf Desktop-PCs, aber nicht auf Servern läuft.", "... keine virtuellen Maschinen ausführen kann."],
+                correctIndex: 1,
+                explanation: "Typ 1 Hypervisoren (z.B. VMware ESXi, Proxmox) laufen direkt auf der Hardware ohne zwischengeschaltetes Betriebssystem und sind dadurch performanter."
+            },
+            {
+                question: "Was ist der grundlegende Unterschied zwischen einem Switch und einem Hub?",
+                options: ["Ein Hub arbeitet auf Layer 3, ein Switch auf Layer 2.", "Ein Hub leitet Datenpakete gezielt an den richtigen Port weiter, ein Switch sendet sie an alle Ports.", "Ein Switch lernt MAC-Adressen und leitet Frames gezielt weiter, ein Hub leitet Signale blind an alle Ports (Broadcast) weiter.", "Es gibt keinen Unterschied, Hub ist der alte Begriff für Switch."],
+                correctIndex: 2,
+                explanation: "Ein Switch baut eine MAC-Adresstabelle auf und leitet Daten zielgerichtet weiter, was Kollisionen verhindert. Ein Hub (veraltet) ist ein dummer Multiport-Repeater."
+            },
+            {
+                question: "Aus wie vielen Hexadezimalzeichen besteht eine typische MAC-Adresse und wie lang ist sie in Bit?",
+                options: ["12 Zeichen (48 Bit)", "8 Zeichen (32 Bit)", "16 Zeichen (64 Bit)", "6 Zeichen (24 Bit)"],
+                correctIndex: 0,
+                explanation: "Eine MAC-Adresse (z.B. 00:1A:2B:3C:4D:5E) ist 48 Bit lang. Da ein Hex-Zeichen 4 Bit darstellt, besteht sie aus 12 Hex-Zeichen (6 Byte)."
+            },
+            {
+                question: "Wofür steht PoE in der Netzwerktechnik?",
+                options: ["Point of Entry", "Power over Ethernet", "Protocol over Ethernet", "Private Online Environment"],
+                correctIndex: 1,
+                explanation: "PoE (Power over Ethernet) ermöglicht es, netzwerkfähige Geräte (wie IP-Telefone oder WLAN-Access-Points) über das Ethernet-Kabel gleichzeitig mit Daten und Strom zu versorgen."
+            },
+            {
+                question: "Was ist das Ziel einer DMZ (Demilitarized Zone)?",
+                options: ["Alle internen Clients vor dem Internet zu verbergen.", "Einen sicheren Bereich für Server zu schaffen, die von außen erreichbar sein müssen (z.B. Webserver), um das interne Netz zu schützen.", "Die Geschwindigkeit des Intranets zu verdoppeln.", "Viren auf infizierten Rechnern automatisch zu löschen."],
+                correctIndex: 1,
+                explanation: "Eine DMZ ist ein durch Firewalls isoliertes Subnetz. Kompromittiert ein Angreifer einen Server in der DMZ (z.B. den Webserver), hat er immer noch keinen direkten Zugriff auf das kritische interne Netzwerk."
+            },
+            {
+                question: "Welches Protokoll löst eine bekannte IP-Adresse in eine unbekannte MAC-Adresse im lokalen Netz auf?",
+                options: ["DNS", "DHCP", "ARP", "RARP"],
+                correctIndex: 2,
+                explanation: "ARP (Address Resolution Protocol) wird verwendet, um die MAC-Adresse (Layer 2) eines Geräts zu ermitteln, wenn nur dessen IP-Adresse (Layer 3) bekannt ist."
+            },
+            {
+                question: "Warum ist eine SSD (Solid State Drive) in der Regel schneller als eine HDD (Hard Disk Drive)?",
+                options: ["Weil sie sich schneller dreht (15.000 RPM statt 7.200 RPM).", "Weil sie Flash-Speicher ohne bewegliche mechanische Teile verwendet.", "Weil sie direkt am RAM angeschlossen wird.", "Weil sie immer über Glasfaser angebunden ist."],
+                correctIndex: 1,
+                explanation: "SSDs verwenden nicht-flüchtigen Flash-Speicher. Das Fehlen von Leseköpfen und rotierenden Scheiben führt zu extrem geringen Zugriffszeiten."
+            },
+            {
+                question: "Ein Linux-Administrator führt den Befehl 'chmod 755 script.sh' aus. Welche Rechte erhält der Besitzer der Datei?",
+                options: ["Lesen und Schreiben (rw-)", "Nur Ausführen (--x)", "Lesen, Schreiben und Ausführen (rwx)", "Nur Lesen (r--)"],
+                correctIndex: 2,
+                explanation: "Bei '755' steht die 7 (4+2+1 für rwx) für die Rechte des Besitzers (User). Er darf also lesen (4), schreiben (2) und ausführen (1)."
+            },
+            {
+                question: "Welchen Standard-Port nutzt das HTTPS-Protokoll?",
+                options: ["Port 80", "Port 21", "Port 443", "Port 22"],
+                correctIndex: 2,
+                explanation: "HTTPS (sicheres HTTP) verwendet standardmäßig den TCP-Port 443. Port 80 ist für unverschlüsseltes HTTP, 21 für FTP und 22 für SSH."
+            },
+            {
+                question: "Welcher SQL-Befehl wird genutzt, um neue Datensätze in eine relationale Datenbanktabelle einzufügen?",
+                options: ["UPDATE", "INSERT INTO", "SELECT", "ADD ROW"],
+                correctIndex: 1,
+                explanation: "Der Befehl 'INSERT INTO tabellenname (spalte1) VALUES (wert1);' fügt einen neuen Datensatz (Row) in die Datenbank ein."
+            },
+            {
+                question: "Bei welchem Cloud-Service-Modell mietet der Kunde komplette virtuelle Server, Speicher und Netzwerke und muss das Betriebssystem selbst verwalten?",
+                options: ["SaaS (Software as a Service)", "PaaS (Platform as a Service)", "IaaS (Infrastructure as a Service)", "DaaS (Desktop as a Service)"],
+                correctIndex: 2,
+                explanation: "Bei IaaS stellt der Provider die Infrastruktur (Hardware, Netz, Virtualisierung) bereit. Der Kunde verantwortet das OS und die darauf laufenden Anwendungen."
+            },
+            {
+                question: "Sie sollen ein /22 Subnetz einrichten. Wie lautet die dazugehörige Subnetzmaske?",
+                options: ["255.255.255.0", "255.255.252.0", "255.255.248.0", "255.255.255.252"],
+                correctIndex: 1,
+                explanation: "Ein /22 Subnetz hat 22 gesetzte Bits. Das dritte Oktett hat 6 gesetzte Bits (128+64+32+16+8+4 = 252). Die Maske ist 255.255.252.0."
+            },
+            {
+                question: "Was bedeutet das Prinzip des 'Least Privilege' in der IT-Sicherheit?",
+                options: ["Dass Benutzer ihre Passwörter so selten wie möglich ändern müssen.", "Dass ein Benutzer oder Prozess nur die minimalen Zugriffsrechte erhält, die für seine Aufgabe zwingend notwendig sind.", "Dass Administratoren die geringste Priorität beim Support haben.", "Dass günstige (least) Hardware für sicherheitskritische Systeme verwendet wird."],
+                correctIndex: 1,
+                explanation: "Das Prinzip der geringsten Rechte (Least Privilege) ist essenziell in der Sicherheit, um den Schaden bei kompromittierten Accounts oder Fehlern zu minimieren."
+            },
+            {
+                question: "Welcher Befehl wird unter Windows in der Eingabeaufforderung genutzt, um die eigene IP-Konfiguration anzuzeigen?",
+                options: ["ifconfig", "ipconfig", "show ip route", "ping local"],
+                correctIndex: 1,
+                explanation: "'ipconfig' wird unter Windows verwendet. 'ifconfig' (oder modern 'ip a') wird traditionell unter Linux/Unix Systemen genutzt."
+            },
+            {
+                question: "Welcher Begriff beschreibt den Prozess, bei dem eine Festplatte vor der Nutzung mit einem Dateisystem (z.B. NTFS oder ext4) versehen wird?",
+                options: ["Defragmentierung", "Partitionierung", "Formatierung", "Kompilierung"],
+                correctIndex: 2,
+                explanation: "Das Erstellen eines Dateisystems auf einer Partition nennt man Formatierung. Die Partitionierung (Aufteilung) erfolgt typischerweise im Schritt davor."
+            },
+            {
+                question: "Ein iSCSI-SAN überträgt Blockdaten über welches Netzwerkprotokoll?",
+                options: ["Fibre Channel (FC)", "InfiniBand", "TCP/IP", "IPX/SPX"],
+                correctIndex: 2,
+                explanation: "iSCSI (Internet Small Computer System Interface) nutzt Standard-IP-Netzwerke (TCP/IP), um SCSI-Befehle zu übertragen, im Gegensatz zu Fibre Channel SANs."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        const currentQSpan = document.getElementById('current-q');
+        const totalQSpan = document.getElementById('total-q');
+        const scoreSpan = document.getElementById('score');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initQuiz() {
+            shuffleArray(questions);
+            totalQSpan.textContent = questions.length;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            explanationBox.style.display = 'none';
+            nextBtn.style.display = 'none';
+            currentQSpan.textContent = currentQuestionIndex + 1;
+            
+            const q = questions[currentQuestionIndex];
+            questionText.textContent = q.question;
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option';
+                optDiv.textContent = opt;
+                optDiv.onclick = () => selectOption(index, optDiv);
+                optionsContainer.appendChild(optDiv);
+            });
+        }
+
+        function selectOption(selectedIndex, optElement) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestionIndex];
+            const allOptions = optionsContainer.children;
+
+            if (selectedIndex === q.correctIndex) {
+                optElement.classList.add('correct');
+                score++;
+                scoreSpan.textContent = score;
+            } else {
+                optElement.classList.add('wrong');
+                allOptions[q.correctIndex].classList.add('correct');
+            }
+
+            explanationText.textContent = q.explanation;
+            explanationBox.style.display = 'block';
+
+            if (currentQuestionIndex < questions.length - 1) {
+                nextBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.textContent = "Ergebnis anzeigen";
+                nextBtn.onclick = showResult;
+                nextBtn.style.display = 'inline-block';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-total').textContent = questions.length;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreSpan.textContent = score;
+            shuffleArray(questions);
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+            nextBtn.textContent = "Nächste Frage";
+            nextBtn.onclick = nextQuestion;
+            loadQuestion();
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Modul 4: Schreibtischtest Trainer</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f1f5f9; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; max-width: 800px; margin: auto; }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px; margin-top: 10px; }
+        .btn:hover { opacity: 0.9; }
+        .code-box { background: #000; color: #4ade80; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 1.2rem; margin: 20px 0; white-space: pre; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #475569; padding: 10px; text-align: center; }
+        th { background: #334155; }
+        input { padding: 8px; width: 60px; text-align: center; border-radius: 5px; border: 1px solid #94a3b8; background: #cbd5e1; font-weight: bold; }
+        .correct { background: #86efac; border-color: #22c55e; }
+        .wrong { background: #fca5a5; border-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <button class="btn" onclick="window.location.href='../index.html'">← Menü</button>
+        <h1>Modul 4: Schreibtischtest Trainer</h1>
+        <p>Führe einen Schreibtischtest (Trace Table) für den folgenden Algorithmus durch. Trage die Werte der Variablen <b>am Ende jedes Schleifendurchlaufs</b> ein. Startwerte (vor der Schleife) sind bereits eingetragen.</p>
+        
+        <div id="code-display" class="code-box">Lade Aufgabe...</div>
+        
+        <div id="table-container"></div>
+        
+        <button class="btn" onclick="checkAnswer()">Prüfen</button>
+        <button class="btn" style="background:#64748b;" onclick="generateTask()">Neue Aufgabe</button>
+        
+        <div id="feedback" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let currentTask = null;
+
+        function generateTask() {
+            const taskTypes = ['smoothing', 'interleaving'];
+            const taskType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+            
+            let code = "";
+            let correctFinalState = [];
+            let tableTitle = "";
+            
+            if (taskType === 'smoothing') {
+                // Array size 9
+                const arr = [];
+                for (let i = 0; i < 9; i++) {
+                    arr.push(Math.floor(Math.random() * 80) + 20); // 20 to 100
+                }
+                const arrString = '{' + arr.join(', ') + '}';
+                
+                code = `// Servermonitoring (Werte in Blöcken zusammenfassen)\n// Ziel: Mittelwert aus 3 Werten in der Mitte speichern, Nachbarn auf 0 setzen.\nint[] PerfCPU = new int[] ${arrString};\nint temp = 0;\n\nfor (int i = 1; i < 8; i += 3) {\n    temp = (PerfCPU[i-1] + PerfCPU[i] + PerfCPU[i+1]) / 3;\n    PerfCPU[i-1] = 0;\n    PerfCPU[i] = temp;\n    PerfCPU[i+1] = 0;\n}`;
+                
+                let currentArr = [...arr];
+                for (let i = 1; i < 8; i += 3) {
+                    let temp = Math.floor((currentArr[i-1] + currentArr[i] + currentArr[i+1]) / 3);
+                    currentArr[i-1] = 0;
+                    currentArr[i] = temp;
+                    currentArr[i+1] = 0;
+                }
+                correctFinalState = currentArr; // Array size 9
+                tableTitle = "Wert (PerfCPU)";
+            } else if (taskType === 'interleaving') {
+                // Array size 9
+                const arr1 = [];
+                for (let i = 0; i < 9; i++) {
+                    arr1.push(Math.floor(Math.random() * 50) + 10);
+                }
+                const arrString = '{' + arr1.join(', ') + '}';
+                
+                code = `// Speicherzuweisung (Interleaving)\n// Ziel: Nummerierung (1,2,3...) an gerade Indizes, RAM1 Werte an ungerade Indizes.\nint[] RAM1 = new int[] ${arrString};\nint[] RAM2 = new int[18];\n\nfor (int i = 0; i < 9; i++) {\n    RAM2[i * 2] = i + 1;\n    RAM2[i * 2 + 1] = RAM1[i];\n}`;
+                
+                let RAM2 = new Array(18).fill(0);
+                for (let i = 0; i < 9; i++) {
+                    RAM2[i * 2] = i + 1;
+                    RAM2[i * 2 + 1] = arr1[i];
+                }
+                correctFinalState = RAM2.slice(0, 9); // Only ask for first 9 elements
+                tableTitle = "Wert (RAM2)";
+            }
+
+            document.getElementById('code-display').textContent = code;
+
+            currentTask = { correctFinalState, tableTitle };
+            renderTable();
+            document.getElementById('feedback').innerHTML = '';
+        }
+
+        function renderTable() {
+            const container = document.getElementById('table-container');
+            let html = `<div style="overflow-x:auto;"><table>
+                <thead>
+                    <tr>
+                        <th>Index</th>`;
+            
+            for(let i = 0; i < currentTask.correctFinalState.length; i++) {
+                html += `<th>${i}</th>`;
+            }
+                        
+            html += `</tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>${currentTask.tableTitle}</th>`;
+
+            for (let i = 0; i < currentTask.correctFinalState.length; i++) {
+                html += `<td><input type="number" id="ans-${i}"></td>`;
+            }
+            html += `</tr>
+                </tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        function checkAnswer() {
+            if (!currentTask) return;
+            let allCorrect = true;
+
+            for (let i = 0; i < currentTask.correctFinalState.length; i++) {
+                const input = document.getElementById(`ans-${i}`);
+                const val = parseInt(input.value);
+                const correctVal = currentTask.correctFinalState[i];
+
+                input.className = '';
+                if (val === correctVal) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('wrong');
+                    allCorrect = false;
+                }
+            }
+
+            const fb = document.getElementById('feedback');
+            if (allCorrect) {
+                fb.innerHTML = "<h3 style='color:#4ade80'>Super! Das Array ist absolut korrekt.</h3>";
+            } else {
+                fb.innerHTML = "<h3 style='color:#f87171'>Es gibt noch Fehler (rot markiert). Versuche es noch einmal!</h3>";
+            }
+        }
+
+        window.onload = generateTask;
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>IPv6 IHK-Trainer - Interaktive Tabelle</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #3b82f6;
+            --text: #f1f5f9;
+            --success: #065f46;
+            --error: #7f1d1d;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .modul-card { background: var(--card); padding: 30px; border-radius: 15px; width: 100%; max-width: 900px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h1 { color: var(--accent); }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #0f172a; }
+        th, td { border: 1px solid #334155; padding: 10px; text-align: left; }
+        th { background: var(--accent); color: white; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-next { background: #64748b; margin-top: 20px; }
+        input.table-input { background: #334155; color: white; border: 1px solid #475569; padding: 5px; width: 80px; font-family: monospace; text-align: center; border-radius: 4px; }
+        .correct-cell { background-color: rgba(74, 222, 128, 0.2) !important; border: 1px solid #4ade80 !important; }
+        .wrong-cell { background-color: rgba(248, 113, 113, 0.2) !important; border: 1px solid #f87171 !important; }
+        #task-desc { font-size: 1.1rem; background: #1e293b; padding: 15px; border-left: 4px solid var(--accent); }
+        .feedback-area { margin-top: 20px; padding: 15px; border-radius: 8px; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="modul-card">
+        <button class="btn" onclick="window.location.href='../index.html'">← Zurück</button>
+        <h1>Prüfungs-Modus: IPv6 Tabelle ausfüllen</h1>
+        
+        <div id="task-desc">Generiere Aufgabe...</div>
+
+        <p><i>Trage nur die letzten 4 Stellen des 4. Blocks ein (z.B. 3040).</i></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Subnetz</th>
+                    <th>Anfangsadresse (4. Block)</th>
+                    <th>Endadresse (4. Block)</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+
+        <button class="btn" onclick="validateTable()">Tabelle prüfen</button>
+        <button class="btn btn-next" onclick="setupNewTask()">Neue Aufgabe</button>
+
+        <div id="feedback" class="feedback-area"></div>
+    </div>
+
+    <script>
+        let currentTask = {
+            solutions: []
+        };
+
+        function setupNewTask() {
+            const prefixes = [52, 54, 57, 58, 59, 60, 61, 62];
+            const targetP = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const stepSize = Math.pow(2, 64 - targetP);
+            const startHex = 0x3000;
+
+            currentTask = {
+                targetP: targetP,
+                step: stepSize,
+                startHex: startHex,
+                solutions: []
+            };
+
+            document.getElementById("task-desc").innerHTML = 
+                `Gegeben: <b>2a02:2e0:3f3:3000::/48</b><br>` +
+                `Gesucht: Subnetze für Präfix <b>/${targetP}</b>. Füllen Sie die Tabelle aus.`;
+
+            document.getElementById("feedback").style.display = "none";
+            renderEmptyTable();
+        }
+
+        function renderEmptyTable() {
+            const tbody = document.getElementById("table-body");
+            tbody.innerHTML = "";
+            let currentAddr = currentTask.startHex;
+
+            for(let i = 1; i <= 4; i++) {
+                let correctStart = currentAddr.toString(16).padStart(4, '0');
+                let correctEnd = (currentAddr + currentTask.step - 1).toString(16).padStart(4, '0');
+                
+                // Speichere die Lösung
+                currentTask.solutions.push({ start: correctStart, end: correctEnd });
+
+                let row = `<tr>
+                    <td>${i}</td>
+                    <td>2a02:2e0:3f3:<input type="text" class="table-input" id="s${i}" value="${i===1 ? '3000' : ''}" ${i===1 ? 'disabled' : ''}>::/${currentTask.targetP}</td>
+                    <td>2a02:2e0:3f3:<input type="text" class="table-input" id="e${i}">::/${currentTask.targetP}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+                
+                currentAddr += currentTask.step;
+            }
+        }
+
+        function validateTable() {
+            let allCorrect = true;
+            const feedback = document.getElementById("feedback");
+
+            for(let i = 1; i <= 4; i++) {
+                const inputS = document.getElementById(`s${i}`);
+                const inputE = document.getElementById(`e${i}`);
+                const sol = currentTask.solutions[i-1];
+
+                // Check Start
+                if(inputS.value.toLowerCase() === sol.start) {
+                    inputS.className = "table-input correct-cell";
+                } else {
+                    inputS.className = "table-input wrong-cell";
+                    allCorrect = false;
+                }
+
+                // Check End
+                if(inputE.value.toLowerCase() === sol.end) {
+                    inputE.className = "table-input correct-cell";
+                } else {
+                    inputE.className = "table-input wrong-cell";
+                    allCorrect = false;
+                }
+            }
+
+            feedback.style.display = "block";
+            if(allCorrect) {
+                feedback.style.background = "var(--success)";
+                feedback.innerHTML = "Hervorragend! Alle Adressen sind korrekt berechnet.";
+            } else {
+                feedback.style.background = "var(--error)";
+                feedback.innerHTML = "Da sind noch Fehler in der Tabelle. Überprüfe die rot markierten Felder!";
+            }
+        }
+
+        window.onload = setupNewTask;
+    </script>
+</body>
+</html>

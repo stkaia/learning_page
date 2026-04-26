@@ -1,0 +1,69 @@
+RDE
+Z 8j\ufgabe
+Für die Data IT GmbH liegen zum Geschäftsjahr 2021 folgende Daten vor:
+
+Stammkapital: 2.500.000 EUR
+Gewinn: 225.000 EUR
+
+Ein Gesellschafter der Data IT GmbH besitzt eine Stammeinlage von 600.000 EUR. Er erhält für das Geschäftsjahr 2021 einen Gewinnanteil von
+75.000 EUR.
+
+Ermitteln Sie die Eigenkapitalrentabilität der Stammeinlage des Gesellschafters in Prozent.
+
+Runden Sie das Ergebnis gegebenenfalls kaufmännisch auf eine Stelle nach dem Komma. _;”‘_
+Tragen Sie das Ergebnis in das Kästchen ein. @
+KD /
+749
+DW YY
+
+j‚ Aufgabe -
+
+Die Data IT GmbH will mit der Cashsystems GmbH fusionieren, Die Cashsystems GmbH verliert ihre wirtschaftliche und rechtliche Selbständigkeit.
+Welchen der folgenden Aussagen trifft auf eine Fusion zu? D
+
+Tragen Sie die Ziffer vor der zutreffenden Aussage in das Kästchen ein.
+
+Durch eine Fusion lassen sich immer Preissteigerungen durchsetzen.
+
+[21 Die Data IT GmbH erhofft sich höhere Gewinne durch Erweiterung des Portfolios,
+
+[3 Eine Fusion führt immer zur Sicherung der Arbeitsplätze.
+
+[4] Durch die Fusion wird der internationale Wettbewerb gefördert.
+
+[5] Die Fusion führt immer zu kostengünstigerer Produktion durch Eröffnung neuer Standorte,
+
+A0.Aufgabe
+
+Die Data IT GmbH plant, eine Servicegesellschaft in der Rechtsform einer GmbH mit vorerst fünf Mitarbeitern zu gründen.
+Welche der folgenden Vorschriften sind dabei zu beachten? ——
+
+Tragen Sie die Ziffern vor den zwei zutreffenden Aussagen in die Kästchen ein. [3’}@
+
+Die Data IT GmbH kann nicht Gesellschafter einer neu gegründeten GmbH werden.
+
+[2].Die Gründung der Servicegesellschaft muss vom Kartellamt genehmigt werden.
+
+[3] Das Stammkapital muss mindestens 25.000 EUR betragen.
+
+Ein Gesellschafter der Data IT GmbH kann auch Gesellschafter der neu gegründeten GmbH werden.
+[S] Die Gründung darf nur durch den Geschäftsführer der Data IT GmbH erfolgen.
+
+Die Data IT GmbH haftet unmittelbar, unbeschränkt und solidarisch für das Tochterunternehmen.
+
+A, Putgabe
+Die Geschäftsleitung der Data IT GmbH hat für das neue Geschäftsjahr die Marktentwicklung analysiert. Die Marktentwicklung hängt von verschie-
+denen Faktoren ab, die das Konsumverhalten beeinflussen.
+
+Welche der folgenden Aussagen trifft zu? MEa
+Tragen Sie die Ziffer vor der zutreffenden Aussage in das Kästchen ein. @
+
+Eine erhöhte Nachfrage führt immer zu Preissenkungen,
+
+Zl Eine erhöhte Kaufkraft der Konsumenten kann zu einer erhöhten Nachfrage führen.
+Bei einer erhöhten Kaufkraft der Konsumenten muss das Angebot reduziert werden.
+[4] Ein verringertes Angebot führt immer zu Preissenkungen.
+
+[5] Änderungen der Kaufkraft beeinflussen nicht die Marktsituation:
+
+7DA Wr ianEA 7

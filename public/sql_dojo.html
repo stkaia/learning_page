@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Dojo — AP2 Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<style>
+:root{
+  --bg:#0a0a0a;
+  --bg-2:#111111;
+  --bg-3:#161616;
+  --border:#222;
+  --border-2:#2a2a2a;
+  --ink:#ededed;
+  --ink-2:#a0a0a0;
+  --ink-3:#6a6a6a;
+  --green:#22c55e;
+  --green-dim:#16a34a;
+  --red:#ef4444;
+  --orange:#f97316;
+  --blue:#3b82f6;
+  --purple:#a855f7;
+  --yellow:#eab308;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+code,pre,.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+
+/* ============ TOP NAV ============ */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  height:56px;
+  display:flex;align-items:center;padding:0 24px;gap:20px;
+}
+.logo{
+  font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;
+}
+.logo .back{color:var(--ink-2);font-size:16px}
+.topbar .nav{display:flex;gap:4px;margin-left:20px}
+.topbar .nav button{
+  background:transparent;border:none;color:var(--ink-2);
+  padding:6px 12px;font-family:inherit;font-size:13px;cursor:pointer;
+  border-radius:6px;font-weight:500;
+}
+.topbar .nav button:hover{color:var(--ink);background:var(--bg-2)}
+.topbar .nav button.active{color:var(--ink);background:var(--bg-2)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-2)}
+
+/* ============ STATS HEADER ============ */
+.stats-header{
+  max-width:1100px;margin:24px auto 20px;
+  padding:0 24px;
+}
+.stats-box{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+.stat{text-align:center}
+.stat .val{font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
+.stat .lbl{font-size:12px;color:var(--ink-3);margin-top:2px}
+
+/* ============ PAGES ============ */
+.page{display:none;max-width:1100px;margin:0 auto;padding:0 24px 80px}
+.page.active{display:block}
+
+/* ============ HOME ============ */
+.welcome{margin-top:8px;margin-bottom:30px}
+.welcome h1{
+  font-size:32px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px;
+}
+.welcome p{color:var(--ink-2);max-width:680px}
+.welcome .badge{
+  display:inline-block;font-size:11px;font-weight:600;
+  background:rgba(249,115,22,.1);color:var(--orange);
+  padding:4px 10px;border-radius:20px;margin-bottom:14px;
+  border:1px solid rgba(249,115,22,.25);
+}
+
+.quick-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;
+  margin-top:20px;
+}
+.quick-card{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;cursor:pointer;transition:all .15s;
+}
+.quick-card:hover{border-color:var(--border-2);background:var(--bg-3);transform:translateY(-1px)}
+.quick-card .ic{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  margin-bottom:10px;
+}
+.quick-card.blue .ic{background:rgba(59,130,246,.12);color:var(--blue)}
+.quick-card.green .ic{background:rgba(34,197,94,.12);color:var(--green)}
+.quick-card.orange .ic{background:rgba(249,115,22,.12);color:var(--orange)}
+.quick-card.purple .ic{background:rgba(168,85,247,.12);color:var(--purple)}
+.quick-card h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.quick-card p{font-size:12px;color:var(--ink-3)}
+
+.section{margin-top:40px}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+}
+.section-head h2{font-size:16px;font-weight:600}
+.section-head .more{font-size:12px;color:var(--ink-3);cursor:pointer}
+.section-head .more:hover{color:var(--ink)}
+
+.topic-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.topic{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+}
+.topic .idx{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--bg-3);color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;flex-shrink:0;
+}
+.topic .txt{flex:1;min-width:0}
+.topic .txt h5{font-size:13px;font-weight:600;margin-bottom:2px}
+.topic .txt p{font-size:11px;color:var(--ink-3)}
+
+/* ============ MISSION LAYOUT (Noel Style Question + Input) ============ */
+.mission-header{
+  display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:18px;
+  border-bottom:1px solid var(--border);
+}
+.mission-header .back-btn{
+  background:transparent;border:none;color:var(--ink-2);cursor:pointer;
+  font-size:13px;padding:6px 10px;border-radius:6px;
+}
+.mission-header .back-btn:hover{background:var(--bg-2);color:var(--ink)}
+.mission-header .cat-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:rgba(59,130,246,.12);color:var(--blue);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.mission-header .title{flex:1}
+.mission-header .title .label{font-size:11px;color:var(--ink-3);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.mission-header .title h3{font-size:16px;font-weight:600}
+.mission-header .actions{display:flex;gap:8px;align-items:center}
+
+.pill{
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.pill.xp{background:rgba(234,179,8,.1);color:var(--yellow);border:1px solid rgba(234,179,8,.25)}
+.pill.attempts{background:var(--bg-2);color:var(--ink-2);border:1px solid var(--border)}
+.pill.danger{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.2);cursor:pointer}
+.pill.danger:hover{background:rgba(239,68,68,.15)}
+
+/* ============ WORKSPACE (Aufgabe | Editor | Schema) ============ */
+.workspace{
+  display:grid;grid-template-columns:320px 1fr 240px;gap:12px;
+  min-height:560px;
+}
+@media(max-width:1000px){.workspace{grid-template-columns:1fr;min-height:auto}}
+
+.panel{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.panel-tabs{
+  display:flex;border-bottom:1px solid var(--border);
+  background:var(--bg-2);
+}
+.panel-tab{
+  padding:10px 14px;font-size:12px;color:var(--ink-2);cursor:pointer;
+  border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;
+  font-weight:500;
+}
+.panel-tab.active{color:var(--ink);border-bottom-color:var(--green)}
+.panel-tab .dot{font-size:10px;color:var(--ink-3)}
+
+.panel-body{padding:18px;overflow-y:auto;flex:1}
+
+/* Aufgaben-Panel */
+.task-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.task-head .tag-challenge{
+  background:rgba(59,130,246,.1);color:var(--blue);
+  font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;
+  border:1px solid rgba(59,130,246,.2);
+}
+.task-head .tag-diff{
+  background:var(--bg-3);color:var(--ink-2);
+  font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);
+}
+.task-body h4{
+  font-size:18px;font-weight:700;margin:10px 0 10px;letter-spacing:-0.3px;
+}
+.task-body p{color:var(--ink-2);font-size:13px;margin-bottom:10px;line-height:1.6}
+.task-body code{
+  background:var(--bg-3);color:var(--orange);
+  padding:1px 6px;border-radius:4px;font-size:12px;
+}
+.task-body pre{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:6px;padding:10px;font-size:12px;margin:8px 0;
+  color:var(--green);overflow-x:auto;
+}
+.task-body h5{
+  font-size:13px;font-weight:600;margin-top:16px;margin-bottom:6px;color:var(--ink);
+}
+.task-body ul{padding-left:18px;margin:6px 0}
+.task-body li{font-size:12px;color:var(--ink-2);margin-bottom:3px}
+
+/* Editor-Panel */
+.editor-wrap{flex:1;display:flex;flex-direction:column;background:var(--bg-2)}
+.editor-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--ink-3);letter-spacing:1px;text-transform:uppercase;
+}
+.editor-head .dots{display:flex;gap:4px}
+.editor-head .dots span{width:8px;height:8px;border-radius:50%;background:var(--border-2)}
+.editor{
+  flex:1;
+  font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;
+  background:var(--bg-2);color:var(--ink);
+  border:none;outline:none;padding:16px;resize:none;
+  tab-size:2;min-height:220px;
+}
+.editor::placeholder{color:var(--ink-3)}
+.editor-actions{
+  display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);
+  background:var(--bg-2);
+}
+.btn{
+  background:var(--bg-3);border:1px solid var(--border-2);color:var(--ink);
+  padding:7px 14px;border-radius:6px;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .15s;
+}
+.btn:hover{background:var(--border);border-color:var(--ink-3)}
+.btn.primary{
+  background:var(--green);border-color:var(--green);color:#000;font-weight:600;
+}
+.btn.primary:hover{background:var(--green-dim);border-color:var(--green-dim)}
+.btn.ghost{background:transparent}
+.btn .ic{font-size:13px}
+
+/* Ergebnis-Bereich */
+.result-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--ink-3);letter-spacing:1px;text-transform:uppercase;
+  background:var(--bg);
+}
+.result-wrap{
+  background:var(--bg-2);max-height:280px;overflow:auto;
+}
+.result-table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px}
+.result-table th{
+  text-align:left;padding:8px 14px;
+  background:var(--bg-3);color:var(--ink-2);font-weight:500;
+  border-bottom:1px solid var(--border);font-size:11px;
+  position:sticky;top:0;
+}
+.result-table td{padding:7px 14px;border-bottom:1px solid var(--border);color:var(--ink)}
+.result-table tr:hover td{background:var(--bg-3)}
+.result-meta{
+  padding:8px 14px;font-size:11px;color:var(--ink-3);
+  display:flex;justify-content:space-between;
+  border-top:1px solid var(--border);background:var(--bg);
+}
+.result-empty{padding:40px 20px;text-align:center;color:var(--ink-3);font-size:12px}
+.result-err{
+  padding:14px;background:rgba(239,68,68,.06);color:#fca5a5;
+  border-left:3px solid var(--red);font-family:monospace;font-size:12px;
+}
+.result-ok-msg{
+  padding:14px;background:rgba(34,197,94,.06);color:#86efac;
+  border-left:3px solid var(--green);font-size:12px;
+}
+
+/* Verdict */
+.verdict{
+  margin:12px 14px;padding:14px 16px;border-radius:8px;
+  display:flex;align-items:center;gap:12px;
+  font-size:13px;
+}
+.verdict.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.verdict.ko{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.verdict .big{font-size:22px}
+
+/* Schema-Panel */
+.schema-panel{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.schema-panel .schema-head{
+  padding:10px 14px;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.schema-panel .schema-body{padding:10px;overflow-y:auto;flex:1}
+.table-box{
+  border:1px solid var(--border);border-radius:8px;
+  margin-bottom:8px;overflow:hidden;
+}
+.table-head{
+  padding:8px 10px;background:var(--bg-3);cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.table-head:hover{background:var(--border)}
+.table-head .tn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);font-weight:500;display:flex;align-items:center;gap:6px}
+.table-head .tn::before{content:"⊞";opacity:.5}
+.table-head .peek{font-size:10px;color:var(--ink-3)}
+.table-head .peek:hover{color:var(--green)}
+.col-list{padding:4px 10px 8px;font-family:'JetBrains Mono',monospace;font-size:11px}
+.col-list .col{
+  padding:3px 0;color:var(--ink);display:flex;justify-content:space-between;align-items:center;
+}
+.col-list .col .tp{color:var(--ink-3);font-size:10px}
+.col-list .col.pk{color:var(--yellow)}
+.col-list .col.pk::before{content:"🔑";margin-right:4px;font-size:9px}
+.col-list .col.fk{color:var(--purple)}
+.col-list .col.fk::before{content:"↗";margin-right:4px;color:var(--purple)}
+
+/* Hints */
+.hint-box{
+  background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);
+  border-radius:8px;padding:12px;margin-top:12px;font-size:12px;
+  color:#fde68a;
+}
+.hint-box strong{
+  display:block;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:4px;color:var(--yellow);
+}
+
+/* ============ MISSIONEN LISTE (Noel-Style) ============ */
+.mission-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.mission-row{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;cursor:pointer;
+  display:flex;align-items:center;gap:14px;
+  transition:all .15s;
+}
+.mission-row:hover{background:var(--bg-3);border-color:var(--border-2)}
+.mission-row.done{border-left:3px solid var(--green)}
+.mission-row .no{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--bg-3);color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:13px;flex-shrink:0;
+}
+.mission-row.done .no{background:rgba(34,197,94,.1);color:var(--green)}
+.mission-row .info{flex:1;min-width:0}
+.mission-row .info .line1{display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap}
+.mission-row .info .line1 h4{font-size:14px;font-weight:600}
+.mission-row .info .line1 .tag{
+  font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;
+}
+.mission-row .info .line2{font-size:12px;color:var(--ink-3)}
+.mission-row .arrow{color:var(--ink-3);font-size:16px}
+.mission-row:hover .arrow{color:var(--ink)}
+
+.tag.t-d1{background:rgba(34,197,94,.1);color:var(--green)}
+.tag.t-d2{background:rgba(59,130,246,.1);color:var(--blue)}
+.tag.t-d3{background:rgba(249,115,22,.1);color:var(--orange)}
+.tag.t-d4{background:rgba(239,68,68,.1);color:var(--red)}
+.tag.t-topic{background:var(--bg-3);color:var(--ink-2);border:1px solid var(--border)}
+
+.filter-bar{
+  display:flex;gap:6px;margin:16px 0;flex-wrap:wrap;
+}
+.chip{
+  padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;
+  background:var(--bg-2);color:var(--ink-2);border:1px solid var(--border);
+  cursor:pointer;
+}
+.chip:hover{color:var(--ink)}
+.chip.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* ============ TUTORIALS ============ */
+.tut-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;margin-top:20px}
+@media(max-width:900px){.tut-layout{grid-template-columns:1fr}}
+.tut-sidebar{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  padding:8px;position:sticky;top:70px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;
+}
+.tut-item{
+  padding:10px 12px;border-radius:6px;cursor:pointer;
+  font-size:13px;color:var(--ink-2);
+  display:flex;align-items:center;gap:10px;
+}
+.tut-item:hover{background:var(--bg-3);color:var(--ink)}
+.tut-item.active{background:var(--bg-3);color:var(--ink);border-left:2px solid var(--green);padding-left:10px}
+.tut-item .n{
+  width:22px;height:22px;font-size:11px;background:var(--bg);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);
+  flex-shrink:0;
+}
+.tut-item.active .n{background:var(--green);color:#000}
+
+.tut-content{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  padding:32px 36px;min-height:500px;
+}
+.tut-content h1{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px}
+.tut-content .tut-lead{color:var(--ink-2);font-size:14px;margin-bottom:24px}
+.tut-content h2{
+  font-size:18px;font-weight:600;margin-top:28px;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.tut-content h3{font-size:14px;font-weight:600;margin-top:18px;margin-bottom:6px;color:var(--orange)}
+.tut-content p{margin-bottom:12px;color:#d4d4d4}
+.tut-content ul,.tut-content ol{padding-left:20px;margin-bottom:12px}
+.tut-content li{margin-bottom:5px;color:#d4d4d4}
+.tut-content li strong{color:var(--ink)}
+.tut-content code{background:var(--bg-3);color:var(--orange);padding:1px 6px;border-radius:4px;font-size:12px}
+.tut-content pre{
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:14px;margin:12px 0;overflow-x:auto;font-size:13px;
+  color:#86efac;line-height:1.6;
+}
+.tut-content pre .kw{color:#c084fc}
+.tut-content pre .str{color:#fbbf24}
+.tut-content pre .cmt{color:var(--ink-3);font-style:italic}
+.tut-content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.tut-content th,.tut-content td{padding:8px 12px;border:1px solid var(--border);text-align:left}
+.tut-content th{background:var(--bg-3);color:var(--ink);font-weight:600}
+.tut-content td{color:#d4d4d4}
+
+.callout{
+  border-radius:8px;padding:14px 16px;margin:16px 0;font-size:13px;
+  border:1px solid;
+}
+.callout strong{display:block;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.callout.tip{background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.25);color:#bfdbfe}
+.callout.tip strong{color:var(--blue)}
+.callout.warn{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.25);color:#fca5a5}
+.callout.warn strong{color:var(--red)}
+.callout.good{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.25);color:#86efac}
+.callout.good strong{color:var(--green)}
+
+/* ============ CHEATSHEET ============ */
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:20px}
+.cheat-card{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;
+}
+.cheat-card h4{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--orange)}
+.cheat-card pre{
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  padding:10px;font-size:11px;color:#86efac;margin:8px 0;overflow-x:auto;
+  line-height:1.5;
+}
+.cheat-card .note{font-size:11px;color:var(--ink-3)}
+
+/* ============ EXAM MODE ============ */
+.exam-container{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:20px}
+.exam-progress{display:flex;gap:3px;margin:14px 0}
+.exam-progress .tick{flex:1;height:4px;background:var(--bg-3);border-radius:2px}
+.exam-progress .tick.done{background:var(--green)}
+.exam-progress .tick.cur{background:var(--orange)}
+.exam-progress .tick.fail{background:var(--red)}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:5px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-3)}
+
+/* ============ TOAST ============ */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:var(--bg-2);border:1px solid var(--green);
+  color:var(--green);padding:12px 20px;border-radius:8px;
+  font-size:13px;font-weight:500;z-index:999;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+  animation:toastIn .25s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}}
+
+/* ============ LOADING ============ */
+.loading-overlay{
+  display:flex;align-items:center;justify-content:center;padding:60px;
+  color:var(--ink-3);font-size:13px;gap:10px;
+}
+.loading-overlay .spin{
+  width:14px;height:14px;border:2px solid var(--border-2);border-top-color:var(--green);
+  border-radius:50%;animation:sp 1s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ============ Solution Modal ============ */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-backdrop.active{display:flex}
+.modal{
+  background:var(--bg-2);border:1px solid var(--border-2);border-radius:12px;
+  padding:24px;max-width:540px;width:100%;
+}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:10px}
+.modal p{color:var(--ink-2);font-size:13px;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* Mission-Detail Full layout tweaks */
+#view-mission .page-wrapper{max-width:none;width:100%;padding:0 24px}
+
+.hint-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.hint-revealed{
+  background:rgba(234,179,8,.05);border-left:3px solid var(--yellow);
+  padding:10px 14px;border-radius:4px;font-size:12px;color:#fde68a;
+}
+
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo" data-page="home">
+    <span class="back">⬅</span>
+    <span>SQL Dojo</span>
+  </div>
+  <div class="nav">
+    <button data-page="home" class="active">Übersicht</button>
+    <button data-page="missions">Challenges</button>
+    <button data-page="tutorials">Tutorials</button>
+    <button data-page="playground">Playground</button>
+    <button data-page="cheatsheet">Cheatsheet</button>
+    <button data-page="exam">Prüfungsmodus</button>
+  </div>
+  <div class="right">
+    <span>AP2 · FISI</span>
+  </div>
+</div>
+
+<!-- STATS (Noel-Style) -->
+<div class="stats-header">
+  <div class="stats-box">
+    <div class="stat"><div class="val" id="s-points">0</div><div class="lbl">Punkte</div></div>
+    <div class="stat"><div class="val" id="s-streak">0</div><div class="lbl">Streak</div></div>
+    <div class="stat"><div class="val" id="s-solved">0 / 15</div><div class="lbl">Gelöst</div></div>
+  </div>
+</div>
+
+<!-- ============ HOME PAGE ============ -->
+<div class="page active" id="view-home">
+  <div class="welcome">
+    <div class="badge">● PRÜFUNG AM 29.04.2026</div>
+    <h1>Willkommen im SQL Dojo.</h1>
+    <p>Dein Trainingsraum für die AP2 als Fachinformatiker Systemintegration. Schreibe echtes SQL direkt im Browser, bekomme sofort Feedback und sammle Punkte. Jede gelöste Challenge bringt dich näher ans Ziel.</p>
+  </div>
+
+  <div class="quick-grid">
+    <div class="quick-card blue" data-page="missions">
+      <div class="ic">⚡</div>
+      <h4>Challenges starten</h4>
+      <p>15 Aufgaben von leicht bis prüfungsreif</p>
+    </div>
+    <div class="quick-card green" data-page="tutorials">
+      <div class="ic">📖</div>
+      <h4>Tutorials lesen</h4>
+      <p>7 Kapitel mit allen Grundlagen</p>
+    </div>
+    <div class="quick-card orange" data-page="playground">
+      <div class="ic">🛠</div>
+      <h4>Playground</h4>
+      <p>Freies Experimentieren mit der DB</p>
+    </div>
+    <div class="quick-card purple" data-page="exam">
+      <div class="ic">🎯</div>
+      <h4>Prüfungsmodus</h4>
+      <p>10 Aufgaben im AP2-Stil</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>Prüfungsrelevante Themen</h2></div>
+    <div class="topic-list">
+      <div class="topic"><div class="idx">1</div><div class="txt"><h5>SELECT & WHERE</h5><p>Daten gezielt abfragen</p></div></div>
+      <div class="topic"><div class="idx">2</div><div class="txt"><h5>Sortierung & Limit</h5><p>ORDER BY, LIMIT, DISTINCT</p></div></div>
+      <div class="topic"><div class="idx">3</div><div class="txt"><h5>Aggregation</h5><p>COUNT, SUM, AVG, GROUP BY, HAVING</p></div></div>
+      <div class="topic"><div class="idx">4</div><div class="txt"><h5>JOINs</h5><p>INNER, LEFT, Self-Join</p></div></div>
+      <div class="topic"><div class="idx">5</div><div class="txt"><h5>Subqueries</h5><p>Unterabfragen, EXISTS, IN</p></div></div>
+      <div class="topic"><div class="idx">6</div><div class="txt"><h5>DML</h5><p>INSERT, UPDATE, DELETE</p></div></div>
+      <div class="topic"><div class="idx">7</div><div class="txt"><h5>DDL</h5><p>CREATE TABLE, Constraints, Keys</p></div></div>
+      <div class="topic"><div class="idx">8</div><div class="txt"><h5>Normalisierung</h5><p>1NF, 2NF, 3NF, ER-Modell</p></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>Empfohlene Challenges</h2><span class="more" data-page="missions">Alle anzeigen →</span></div>
+    <div class="mission-list" id="home-suggestions"></div>
+  </div>
+</div>
+
+<!-- ============ MISSIONS LIST ============ -->
+<div class="page" id="view-missions">
+  <div class="welcome" style="margin-bottom:10px">
+    <h1>Challenges</h1>
+    <p>Wähle eine Aufgabe. Jede gelöste bringt dir XP. Filtere nach Schwierigkeit.</p>
+  </div>
+  <div class="filter-bar">
+    <div class="chip active" data-filter="all">Alle</div>
+    <div class="chip" data-filter="1">Einfach</div>
+    <div class="chip" data-filter="2">Mittel</div>
+    <div class="chip" data-filter="3">Schwer</div>
+    <div class="chip" data-filter="4">Prüfungsniveau</div>
+    <div class="chip" data-filter="open">Offen</div>
+    <div class="chip" data-filter="done">Gelöst</div>
+  </div>
+  <div class="mission-list" id="missions-list"></div>
+</div>
+
+<!-- ============ MISSION DETAIL ============ -->
+<div class="page" id="view-mission">
+  <div class="mission-header">
+    <button class="back-btn" onclick="go('missions')">⬅ SQL Dojo</button>
+    <div class="cat-icon" id="m-cat-icon">📊</div>
+    <div class="title">
+      <div class="label" id="m-category">SQL GRUNDLAGEN</div>
+      <h3 id="m-title">Challenge</h3>
+    </div>
+    <div class="actions">
+      <span class="pill xp">⚡ <span id="m-xp">15</span> XP</span>
+      <span class="pill attempts">Versuche: <span id="m-attempts">0</span></span>
+      <span class="pill danger" id="btn-solution">⚐ Lösung anzeigen</span>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <!-- Aufgabe -->
+    <div class="panel">
+      <div class="panel-tabs">
+        <div class="panel-tab active" data-tab="task">📋 Aufgabe</div>
+        <div class="panel-tab" data-tab="hints">💡 Hinweise <span class="dot" id="hint-count">0/3</span></div>
+      </div>
+      <div class="panel-body">
+        <div id="tab-task">
+          <div class="task-head">
+            <span class="tag-challenge">Challenge</span>
+            <span class="tag-diff" id="m-diff">Schwierigkeit 2/5</span>
+          </div>
+          <div class="task-body" id="m-brief"></div>
+        </div>
+        <div id="tab-hints" style="display:none">
+          <p style="font-size:12px;color:var(--ink-3);margin-bottom:12px">Tipps nur nutzen, wenn du wirklich feststeckst. Jeder genommene Tipp kostet 5 XP.</p>
+          <div class="hint-list" id="hint-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="panel editor-wrap">
+      <div class="editor-head">
+        <span>SQL-ABFRAGE</span>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <textarea class="editor" id="editor" spellcheck="false" placeholder="-- Schreibe hier dein SQL&#10;SELECT ..."></textarea>
+      <div class="editor-actions">
+        <button class="btn" id="btn-run"><span class="ic">▶</span> Ausführen</button>
+        <button class="btn primary" id="btn-check"><span class="ic">✓</span> Prüfen</button>
+        <button class="btn ghost" id="btn-reset">↻ Reset</button>
+      </div>
+      <div class="result-header">
+        <span>ERGEBNIS</span>
+        <span id="result-time"></span>
+      </div>
+      <div class="result-wrap" id="result"></div>
+    </div>
+
+    <!-- Schema -->
+    <div class="schema-panel">
+      <div class="schema-head">
+        <span>⊞ SCHEMA</span>
+        <span>Fiktive IT-Firma</span>
+      </div>
+      <div class="schema-body" id="schema-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TUTORIALS ============ -->
+<div class="page" id="view-tutorials">
+  <div class="welcome" style="margin-bottom:10px">
+    <h1>Tutorials</h1>
+    <p>Alle SQL-Grundlagen strukturiert erklärt. Von der ersten SELECT-Abfrage bis zur dritten Normalform.</p>
+  </div>
+  <div class="tut-layout">
+    <div class="tut-sidebar" id="tut-sidebar"></div>
+    <div class="tut-content" id="tut-content">
+      <div class="loading-overlay"><span class="spin"></span> Wähle links ein Tutorial</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PLAYGROUND ============ -->
+<div class="page" id="view-playground">
+  <div class="welcome" style="margin-bottom:10px">
+    <h1>Playground</h1>
+    <p>Freies SQL-Training. Alle Tabellen sind geladen. Rechts siehst du das Schema. Probier alles aus!</p>
+  </div>
+  <div class="workspace" style="grid-template-columns:1fr 280px">
+    <div class="panel editor-wrap">
+      <div class="editor-head">
+        <span>SQL-PLAYGROUND</span>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <textarea class="editor" id="pg-editor" spellcheck="false">SELECT * FROM mitarbeiter LIMIT 10;</textarea>
+      <div class="editor-actions">
+        <button class="btn primary" id="pg-run"><span class="ic">▶</span> Ausführen</button>
+        <button class="btn ghost" id="pg-clear">✕ Leeren</button>
+        <button class="btn ghost" id="pg-reset">↻ DB zurücksetzen</button>
+      </div>
+      <div class="result-header">
+        <span>ERGEBNIS</span>
+        <span id="pg-time"></span>
+      </div>
+      <div class="result-wrap" id="pg-result" style="max-height:400px"></div>
+    </div>
+    <div class="schema-panel">
+      <div class="schema-head"><span>⊞ TABELLEN</span></div>
+      <div class="schema-body" id="pg-schema"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHEATSHEET ============ -->
+<div class="page" id="view-cheatsheet">
+  <div class="welcome" style="margin-bottom:10px">
+    <h1>Cheatsheet</h1>
+    <p>Alle wichtigen SQL-Befehle auf einen Blick. Perfekt für den Prüfungstag.</p>
+  </div>
+  <div class="cheat-grid" id="cheat-grid"></div>
+</div>
+
+<!-- ============ EXAM ============ -->
+<div class="page" id="view-exam">
+  <div class="welcome" style="margin-bottom:10px">
+    <h1>Prüfungsmodus</h1>
+    <p>10 gemischte Aufgaben, keine Tipps, kein Zurück. Am Ende bekommst du eine Note nach IHK-Schema.</p>
+  </div>
+  <div class="exam-container" id="exam-container"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Lösung anzeigen?</h3>
+    <p id="modal-text">Du verlierst deine Chance auf XP für diese Challenge. Wirklich fortfahren?</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Abbrechen</button>
+      <button class="btn primary" id="modal-ok">Ja, zeigen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================
+   SQL DOJO — NOEL-STYLE
+   =================================================== */
+
+let SQL=null, DB=null;
+
+const STATE = {
+  points: parseInt(localStorage.getItem('dojo_points')||'0'),
+  streak: parseInt(localStorage.getItem('dojo_streak')||'0'),
+  done: JSON.parse(localStorage.getItem('dojo_done')||'[]'),
+  filter: 'all',
+  currentMission: null,
+  currentAttempts: 0,
+  hintsRevealed: 0,
+  exam: null
+};
+
+function save(){
+  localStorage.setItem('dojo_points',STATE.points);
+  localStorage.setItem('dojo_streak',STATE.streak);
+  localStorage.setItem('dojo_done',JSON.stringify(STATE.done));
+}
+function addPoints(p){STATE.points+=p;save();updateHeader()}
+function breakStreak(){STATE.streak=0;save();updateHeader()}
+function incStreak(){STATE.streak++;save();updateHeader()}
+
+function updateHeader(){
+  document.getElementById('s-points').textContent=STATE.points;
+  document.getElementById('s-streak').textContent=STATE.streak;
+  document.getElementById('s-solved').textContent=STATE.done.length+' / 15';
+}
+
+/* ============ NAVIGATION ============ */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('view-'+page).classList.add('active');
+  document.querySelectorAll('.topbar .nav button').forEach(b=>b.classList.remove('active'));
+  const navBtn = document.querySelector(`.topbar .nav button[data-page="${page}"]`);
+  if(navBtn) navBtn.classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+document.querySelectorAll('[data-page]').forEach(el=>{
+  el.addEventListener('click',()=>go(el.dataset.page));
+});
+
+/* ============ DATABASE ============ */
+const SCHEMA_SQL = `
+CREATE TABLE abteilung (
+  abt_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  standort TEXT
+);
+CREATE TABLE mitarbeiter (
+  ma_id INTEGER PRIMARY KEY,
+  vorname TEXT NOT NULL,
+  nachname TEXT NOT NULL,
+  gehalt REAL,
+  einstellung DATE,
+  abt_id INTEGER,
+  chef_id INTEGER,
+  FOREIGN KEY (abt_id) REFERENCES abteilung(abt_id),
+  FOREIGN KEY (chef_id) REFERENCES mitarbeiter(ma_id)
+);
+CREATE TABLE kunde (
+  kunde_id INTEGER PRIMARY KEY,
+  firma TEXT NOT NULL,
+  stadt TEXT,
+  land TEXT
+);
+CREATE TABLE projekt (
+  proj_id INTEGER PRIMARY KEY,
+  bezeichnung TEXT NOT NULL,
+  budget REAL,
+  kunde_id INTEGER,
+  start_datum DATE,
+  FOREIGN KEY (kunde_id) REFERENCES kunde(kunde_id)
+);
+CREATE TABLE ma_projekt (
+  ma_id INTEGER,
+  proj_id INTEGER,
+  stunden INTEGER,
+  PRIMARY KEY (ma_id, proj_id),
+  FOREIGN KEY (ma_id) REFERENCES mitarbeiter(ma_id),
+  FOREIGN KEY (proj_id) REFERENCES projekt(proj_id)
+);
+CREATE TABLE produkt (
+  prod_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  kategorie TEXT,
+  preis REAL,
+  lagerbestand INTEGER
+);
+CREATE TABLE bestellung (
+  best_id INTEGER PRIMARY KEY,
+  kunde_id INTEGER,
+  datum DATE,
+  status TEXT,
+  FOREIGN KEY (kunde_id) REFERENCES kunde(kunde_id)
+);
+CREATE TABLE bestellposition (
+  best_id INTEGER,
+  prod_id INTEGER,
+  menge INTEGER,
+  PRIMARY KEY (best_id, prod_id),
+  FOREIGN KEY (best_id) REFERENCES bestellung(best_id),
+  FOREIGN KEY (prod_id) REFERENCES produkt(prod_id)
+);
+
+INSERT INTO abteilung VALUES
+  (10,'IT','Berlin'),(20,'Vertrieb','München'),(30,'Buchhaltung','Berlin'),
+  (40,'Support','Hamburg'),(50,'Entwicklung','Berlin');
+
+INSERT INTO mitarbeiter VALUES
+  (1,'Anna','Müller',4500,'2018-03-15',10,NULL),
+  (2,'Ben','Schmidt',3800,'2019-07-01',10,1),
+  (3,'Clara','Weber',5200,'2015-01-10',20,NULL),
+  (4,'David','Fischer',3200,'2022-05-20',20,3),
+  (5,'Emma','Wagner',3500,'2021-09-01',30,NULL),
+  (6,'Felix','Becker',2900,'2023-02-14',40,NULL),
+  (7,'Greta','Hoffmann',6000,'2012-06-01',50,NULL),
+  (8,'Hans','Schulz',4100,'2020-04-10',50,7),
+  (9,'Ida','Meyer',3900,'2021-11-15',50,7),
+  (10,'Jens','Koch',3300,'2023-08-01',10,1),
+  (11,'Kim','Richter',4700,'2017-02-20',20,3),
+  (12,'Leon','Neumann',2800,'2024-01-15',40,6);
+
+INSERT INTO kunde VALUES
+  (100,'TechCorp GmbH','Berlin','Deutschland'),
+  (101,'DataSoft AG','Wien','Österreich'),
+  (102,'CloudNine Ltd','London','England'),
+  (103,'Müller & Söhne','München','Deutschland'),
+  (104,'Nordic Systems','Stockholm','Schweden'),
+  (105,'Alpine Logistics','Zürich','Schweiz');
+
+INSERT INTO projekt VALUES
+  (200,'Webshop Relaunch',45000,100,'2024-01-15'),
+  (201,'CRM Migration',80000,101,'2024-03-01'),
+  (202,'App Entwicklung',60000,102,'2023-11-10'),
+  (203,'Datenbank Upgrade',25000,100,'2024-06-01'),
+  (204,'KI Beratung',90000,103,'2024-02-20'),
+  (205,'Cloud Migration',70000,105,'2024-05-15');
+
+INSERT INTO ma_projekt VALUES
+  (1,200,120),(1,203,80),(2,200,160),(2,201,100),
+  (7,202,200),(7,204,150),(8,201,180),(8,205,90),
+  (9,202,140),(9,205,120),(3,204,80),(11,204,60);
+
+INSERT INTO produkt VALUES
+  (1,'Laptop Pro 15','Hardware',1299.00,25),
+  (2,'Maus Wireless','Hardware',29.90,200),
+  (3,'Tastatur Mechanisch','Hardware',89.00,80),
+  (4,'Office 365','Software',99.00,999),
+  (5,'Antivirus Pro','Software',49.00,500),
+  (6,'Monitor 27"','Hardware',399.00,40),
+  (7,'Webcam HD','Hardware',79.00,150),
+  (8,'Headset Gaming','Hardware',129.00,60),
+  (9,'Photoshop Lizenz','Software',239.00,300),
+  (10,'USB-C Hub','Hardware',45.00,0);
+
+INSERT INTO bestellung VALUES
+  (1000,100,'2024-09-01','geliefert'),
+  (1001,101,'2024-09-15','geliefert'),
+  (1002,100,'2024-10-02','versand'),
+  (1003,103,'2024-10-10','offen'),
+  (1004,102,'2024-10-15','offen'),
+  (1005,104,'2024-08-20','geliefert'),
+  (1006,105,'2024-10-20','storniert');
+
+INSERT INTO bestellposition VALUES
+  (1000,1,2),(1000,2,5),(1000,6,1),
+  (1001,4,10),(1001,9,3),
+  (1002,1,1),(1002,8,2),
+  (1003,3,2),(1003,7,1),
+  (1004,1,3),
+  (1005,5,4),(1005,4,2),
+  (1006,2,10);
+`;
+
+async function initDB(){
+  if(!SQL){
+    SQL = await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`});
+  }
+  DB = new SQL.Database();
+  DB.exec(SCHEMA_SQL);
+}
+
+function runSQL(query){
+  const t0=performance.now();
+  try{
+    const res = DB.exec(query);
+    return {ok:true, res, ms:Math.round(performance.now()-t0)};
+  }catch(e){
+    return {ok:false, err:e.message, ms:Math.round(performance.now()-t0)};
+  }
+}
+
+function renderResultTable(target, outcome){
+  target.innerHTML='';
+  if(!outcome.ok){
+    const el = document.createElement('div');
+    el.className='result-err';
+    el.textContent='⚠ '+outcome.err;
+    target.appendChild(el);
+    return;
+  }
+  if(!outcome.res || outcome.res.length===0){
+    const el=document.createElement('div');
+    el.className='result-ok-msg';
+    el.textContent='✓ Query ausgeführt. Keine Ergebnisdaten (z. B. bei INSERT/UPDATE/DELETE). Nutze SELECT zum Prüfen.';
+    target.appendChild(el);
+    return;
+  }
+  outcome.res.forEach(r=>{
+    const tbl=document.createElement('table');
+    tbl.className='result-table';
+    const thead=document.createElement('thead');
+    const trh=document.createElement('tr');
+    r.columns.forEach(c=>{const th=document.createElement('th');th.textContent=c;trh.appendChild(th)});
+    thead.appendChild(trh);tbl.appendChild(thead);
+    const tbody=document.createElement('tbody');
+    r.values.slice(0,200).forEach(row=>{
+      const tr=document.createElement('tr');
+      row.forEach(v=>{
+        const td=document.createElement('td');
+        td.textContent=v===null?'NULL':v;
+        if(v===null) td.style.color='var(--ink-3)';
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    target.appendChild(tbl);
+    const meta = document.createElement('div');
+    meta.className='result-meta';
+    meta.innerHTML = `<span>${r.values.length} Zeile(n)</span><span>${outcome.ms} ms</span>`;
+    target.appendChild(meta);
+  });
+}
+
+/* ============ SCHEMA PANEL RENDER ============ */
+function renderSchemaPanel(target, onClick){
+  target.innerHTML='';
+  const tables = DB.exec("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+  if(!tables[0]) return;
+  tables[0].values.forEach(([tname])=>{
+    const cols = DB.exec(`PRAGMA table_info(${tname})`);
+    const fks = DB.exec(`PRAGMA foreign_key_list(${tname})`);
+    const fkCols = new Set();
+    if(fks[0]) fks[0].values.forEach(f=>fkCols.add(f[3])); // "from" column
+
+    const box = document.createElement('div');
+    box.className='table-box';
+    const head = document.createElement('div');
+    head.className='table-head';
+    head.innerHTML = `<span class="tn">${tname}</span><span class="peek">SELECT *</span>`;
+    head.addEventListener('click',()=>onClick&&onClick(tname));
+    box.appendChild(head);
+    const list = document.createElement('div');
+    list.className='col-list';
+    if(cols[0]){
+      cols[0].values.forEach(c=>{
+        // c = [cid, name, type, notnull, dflt, pk]
+        const div = document.createElement('div');
+        div.className='col';
+        if(c[5]) div.classList.add('pk');
+        else if(fkCols.has(c[1])) div.classList.add('fk');
+        div.innerHTML = `<span>${c[1]}</span><span class="tp">${c[2]||''}</span>`;
+        list.appendChild(div);
+      });
+    }
+    box.appendChild(list);
+    target.appendChild(box);
+  });
+}
+
+/* ============ MISSIONS ============ */
+const MISSIONS = [
+  {
+    id:'m1', diff:1, xp:10, topic:'SELECT', cat:'SQL Grundlagen',
+    title:'Dein erster SELECT',
+    short:'Gib alle Mitarbeiter aus',
+    brief:`
+<p>Starte mit dem einfachsten SQL-Befehl: Gib <strong>alle Zeilen und alle Spalten</strong> der Tabelle <code>mitarbeiter</code> aus.</p>
+<h5>Hinweis</h5>
+<p>Der Stern <code>*</code> bedeutet "alle Spalten". Die Grundform ist <code>SELECT ... FROM ...</code>.</p>`,
+    hints:[
+      'Die SELECT-Abfrage hat die Form: SELECT spalten FROM tabelle;',
+      'Statt einzelner Spaltennamen kannst du * verwenden.',
+      'Vollständige Lösung: SELECT * FROM mitarbeiter;'
+    ],
+    solution:'SELECT * FROM mitarbeiter;',
+    check: (r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      if(!r.res[0]) return {ok:false,msg:'Keine Daten zurückgegeben.'};
+      if(r.res[0].values.length !== 12) return {ok:false,msg:`Erwartet: 12 Zeilen, bekommen: ${r.res[0].values.length}`};
+      if(r.res[0].columns.length !== 7) return {ok:false,msg:`Erwartet: 7 Spalten, bekommen: ${r.res[0].columns.length}`};
+      return {ok:true,msg:'Perfekt! 12 Mitarbeiter mit 7 Spalten — genau richtig.'};
+    }
+  },
+  {
+    id:'m2', diff:1, xp:15, topic:'WHERE', cat:'SQL Grundlagen',
+    title:'WHERE — Zeilen filtern',
+    short:'Mitarbeiter mit Gehalt > 4000',
+    brief:`
+<p>Nutze <code>WHERE</code>, um Zeilen zu filtern.</p>
+<p>Gib alle Mitarbeiter aus, die mehr als <strong>4000 €</strong> verdienen. Zeige nur die Spalten <code>vorname</code>, <code>nachname</code> und <code>gehalt</code>.</p>
+<h5>Erwartet</h5>
+<p>5 Zeilen, 3 Spalten.</p>`,
+    hints:[
+      'Format: SELECT spalten FROM tabelle WHERE bedingung;',
+      'Der Vergleichsoperator für "größer als" ist >.',
+      'Lösung: SELECT vorname, nachname, gehalt FROM mitarbeiter WHERE gehalt > 4000;'
+    ],
+    solution:'SELECT vorname, nachname, gehalt FROM mitarbeiter WHERE gehalt > 4000;',
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t) return {ok:false,msg:'Keine Daten.'};
+      const cols = t.columns.map(c=>c.toLowerCase());
+      if(!(cols.includes('vorname')&&cols.includes('nachname')&&cols.includes('gehalt'))) return {ok:false,msg:'Spalten vorname, nachname, gehalt erwartet.'};
+      if(t.values.length !== 5) return {ok:false,msg:`Erwartet: 5 Zeilen, bekommen: ${t.values.length}`};
+      const gi = cols.indexOf('gehalt');
+      if(t.values.some(row=>row[gi]<=4000)) return {ok:false,msg:'Einige Gehälter sind ≤ 4000.'};
+      return {ok:true,msg:'Sehr gut — WHERE-Filter passt.'};
+    }
+  },
+  {
+    id:'m3', diff:1, xp:15, topic:'ORDER BY', cat:'SQL Grundlagen',
+    title:'Sortieren mit ORDER BY',
+    short:'Alle Mitarbeiter, teuerste zuerst',
+    brief:`
+<p>Gib <code>vorname</code>, <code>nachname</code> und <code>gehalt</code> aller Mitarbeiter aus — sortiert nach <strong>Gehalt absteigend</strong>.</p>
+<h5>Tipp</h5>
+<p><code>ORDER BY gehalt DESC</code> — DESC = descending / absteigend. ASC wäre aufsteigend.</p>`,
+    hints:[
+      'ORDER BY kommt nach WHERE (wenn vorhanden).',
+      'DESC = descending (absteigend).',
+      'Lösung: SELECT vorname, nachname, gehalt FROM mitarbeiter ORDER BY gehalt DESC;'
+    ],
+    solution:'SELECT vorname, nachname, gehalt FROM mitarbeiter ORDER BY gehalt DESC;',
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==12) return {ok:false,msg:'Erwartet: 12 Zeilen.'};
+      const gi=t.columns.map(c=>c.toLowerCase()).indexOf('gehalt');
+      if(gi<0) return {ok:false,msg:'Spalte gehalt muss enthalten sein.'};
+      for(let i=1;i<t.values.length;i++) if(t.values[i][gi]>t.values[i-1][gi]) return {ok:false,msg:'Nicht absteigend sortiert.'};
+      return {ok:true,msg:'Sortierung korrekt — Greta mit 6000 ist Spitze!'};
+    }
+  },
+  {
+    id:'m4', diff:2, xp:20, topic:'LIKE', cat:'Listen & Muster',
+    title:'Listen und Bereiche: IN und BETWEEN',
+    short:"Nachnamen mit 'S'",
+    brief:`
+<p>Nutze <code>LIKE</code> mit Wildcards, um Muster zu finden.</p>
+<p>Finde alle Mitarbeiter, deren <code>nachname</code> mit <strong>'S'</strong> beginnt. Gib alle Spalten aus.</p>
+<h5>Wildcards</h5>
+<ul>
+  <li><code>%</code> — beliebig viele Zeichen</li>
+  <li><code>_</code> — genau ein Zeichen</li>
+</ul>`,
+    hints:[
+      "LIKE 'S%' findet Strings, die mit S beginnen.",
+      'Wildcards stehen immer in den Anführungszeichen.',
+      "Lösung: SELECT * FROM mitarbeiter WHERE nachname LIKE 'S%';"
+    ],
+    solution:"SELECT * FROM mitarbeiter WHERE nachname LIKE 'S%';",
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==2) return {ok:false,msg:`2 Mitarbeiter erwartet (Schmidt, Schulz), bekommen: ${t?t.values.length:0}`};
+      return {ok:true,msg:'Schmidt und Schulz gefunden. LIKE sitzt!'};
+    }
+  },
+  {
+    id:'m5', diff:2, xp:20, topic:'COUNT', cat:'Aggregation',
+    title:'COUNT — Zählen',
+    short:'Wie viele Mitarbeiter gibt es?',
+    brief:`
+<p>Gib die <strong>Gesamtanzahl aller Mitarbeiter</strong> aus. Die Ausgabespalte soll <code>anzahl</code> heißen.</p>
+<h5>Tipp</h5>
+<p>Mit <code>COUNT(*)</code> zählst du Zeilen. Mit <code>AS anzahl</code> benennst du die Spalte um.</p>`,
+    hints:[
+      'COUNT(*) zählt alle Zeilen.',
+      'AS gibt einer Spalte einen Alias.',
+      'Lösung: SELECT COUNT(*) AS anzahl FROM mitarbeiter;'
+    ],
+    solution:'SELECT COUNT(*) AS anzahl FROM mitarbeiter;',
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==1) return {ok:false,msg:'Genau 1 Zeile erwartet.'};
+      if(t.values[0][0] !== 12) return {ok:false,msg:`Erwartet 12, bekommen ${t.values[0][0]}.`};
+      if(!t.columns[0].toLowerCase().includes('anzahl')) return {ok:false,msg:'Spalte soll "anzahl" heißen (AS anzahl).'};
+      return {ok:true,msg:'12 Mitarbeiter — gezählt!'};
+    }
+  },
+  {
+    id:'m6', diff:2, xp:25, topic:'GROUP BY', cat:'Aggregation',
+    title:'GROUP BY — Gruppieren',
+    short:'Durchschnittsgehalt pro Abteilung',
+    brief:`
+<p>Gib pro Abteilung die <code>abt_id</code> und das <strong>Durchschnittsgehalt</strong> (Alias: <code>schnitt</code>) aus.</p>
+<h5>Erwartet</h5>
+<p>5 Zeilen (eine pro Abteilung), 2 Spalten.</p>`,
+    hints:[
+      'Aggregate brauchen GROUP BY, wenn zusätzliche Spalten dabei sind.',
+      'AVG(gehalt) berechnet den Durchschnitt.',
+      'Lösung: SELECT abt_id, AVG(gehalt) AS schnitt FROM mitarbeiter GROUP BY abt_id;'
+    ],
+    solution:'SELECT abt_id, AVG(gehalt) AS schnitt FROM mitarbeiter GROUP BY abt_id;',
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==5) return {ok:false,msg:`5 Abteilungen erwartet, bekommen ${t?t.values.length:0}.`};
+      if(t.columns.length !== 2) return {ok:false,msg:'Genau 2 Spalten erwartet.'};
+      return {ok:true,msg:'GROUP BY sitzt!'};
+    }
+  },
+  {
+    id:'m7', diff:2, xp:30, topic:'INNER JOIN', cat:'JOINs',
+    title:'INNER JOIN — Tabellen verknüpfen',
+    short:'Mitarbeiter + Abteilungsname',
+    brief:`
+<p>Verknüpfe <code>mitarbeiter</code> und <code>abteilung</code> über <code>abt_id</code>.</p>
+<p>Gib für jeden Mitarbeiter <code>vorname</code>, <code>nachname</code> und den <strong>Abteilungsnamen</strong> (Alias: <code>abteilung</code>) aus.</p>`,
+    hints:[
+      'JOIN-Syntax: FROM a INNER JOIN b ON a.spalte = b.spalte',
+      'Nutze Tabellen-Aliase (m für mitarbeiter, a für abteilung), das macht die Query kürzer.',
+      'Der Spalte name wird mit "a.name AS abteilung" umbenannt.'
+    ],
+    solution:`SELECT m.vorname, m.nachname, a.name AS abteilung
+FROM mitarbeiter m
+INNER JOIN abteilung a ON m.abt_id = a.abt_id;`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t) return {ok:false,msg:'Keine Daten.'};
+      if(t.values.length!==12) return {ok:false,msg:`12 Zeilen erwartet, bekommen ${t.values.length}.`};
+      const c=t.columns.map(x=>x.toLowerCase());
+      if(!c.includes('vorname')||!c.includes('nachname')||!c.includes('abteilung')) return {ok:false,msg:'Spalten: vorname, nachname, abteilung.'};
+      return {ok:true,msg:'JOIN perfekt gemacht!'};
+    }
+  },
+  {
+    id:'m8', diff:3, xp:30, topic:'JOIN + WHERE', cat:'JOINs',
+    title:'IT-Team aus der Abteilung holen',
+    short:"Alle Mitarbeiter mit abteilung = 'IT'",
+    brief:`
+<p>Finde alle Mitarbeiter der Abteilung <strong>'IT'</strong>. Zeige nur <code>vorname</code> und <code>nachname</code>.</p>
+<h5>Wichtig</h5>
+<p>Filtere über den <strong>Namen</strong> der Abteilung (nicht über abt_id = 10) — du brauchst also einen JOIN <em>und</em> WHERE.</p>`,
+    hints:[
+      'Kombiniere INNER JOIN mit WHERE a.name = ...',
+      'Strings stehen in einfachen Anführungszeichen.',
+      'Lösung: SELECT m.vorname, m.nachname FROM mitarbeiter m INNER JOIN abteilung a ON m.abt_id = a.abt_id WHERE a.name = \'IT\';'
+    ],
+    solution:`SELECT m.vorname, m.nachname
+FROM mitarbeiter m
+INNER JOIN abteilung a ON m.abt_id = a.abt_id
+WHERE a.name = 'IT';`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==3) return {ok:false,msg:`3 IT-Mitarbeiter erwartet, bekommen ${t?t.values.length:0}.`};
+      if(t.columns.length!==2) return {ok:false,msg:'Nur 2 Spalten (vorname, nachname).'};
+      return {ok:true,msg:'3 IT-Mitarbeiter gefunden: Anna, Ben, Jens.'};
+    }
+  },
+  {
+    id:'m9', diff:3, xp:35, topic:'GROUP + JOIN', cat:'Aggregation',
+    title:'Budget-Summe pro Kunde',
+    short:'Für jeden Kunden: Summe der Projekt-Budgets',
+    brief:`
+<p>Zeige für jeden Kunden die <strong>firma</strong> und die <strong>Summe aller Projektbudgets</strong> (Alias: <code>gesamt</code>).</p>
+<p>Sortiere absteigend nach der Summe.</p>`,
+    hints:[
+      'JOIN kunde und projekt über kunde_id.',
+      'SUM(p.budget) mit GROUP BY k.firma.',
+      'ORDER BY gesamt DESC am Ende.'
+    ],
+    solution:`SELECT k.firma, SUM(p.budget) AS gesamt
+FROM kunde k
+JOIN projekt p ON k.kunde_id = p.kunde_id
+GROUP BY k.firma
+ORDER BY gesamt DESC;`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t) return {ok:false,msg:'Keine Daten.'};
+      if(t.values.length<4||t.values.length>6) return {ok:false,msg:`4-5 Zeilen erwartet, bekommen ${t.values.length}.`};
+      for(let i=1;i<t.values.length;i++) if(t.values[i][1]>t.values[i-1][1]) return {ok:false,msg:'Nicht absteigend sortiert.'};
+      return {ok:true,msg:'JOIN + GROUP BY + ORDER BY — Kombi geknackt!'};
+    }
+  },
+  {
+    id:'m10', diff:3, xp:35, topic:'HAVING', cat:'Aggregation',
+    title:'HAVING — Gruppen filtern',
+    short:'Abteilungen mit AVG > 4000',
+    brief:`
+<p>Finde alle Abteilungen mit einem <strong>durchschnittlichen Gehalt über 4000 €</strong>.</p>
+<p>Spalten: <code>abt_id</code> und <code>schnitt</code> (= AVG(gehalt)).</p>
+<h5>Merke</h5>
+<ul>
+  <li><code>WHERE</code> filtert <strong>vor</strong> GROUP BY (Zeilen)</li>
+  <li><code>HAVING</code> filtert <strong>nach</strong> GROUP BY (Gruppen)</li>
+</ul>`,
+    hints:[
+      'Nach einem Aggregat (AVG, SUM, COUNT) musst du HAVING nutzen, nicht WHERE.',
+      'HAVING AVG(gehalt) > 4000',
+      'Lösung: SELECT abt_id, AVG(gehalt) AS schnitt FROM mitarbeiter GROUP BY abt_id HAVING AVG(gehalt) > 4000;'
+    ],
+    solution:`SELECT abt_id, AVG(gehalt) AS schnitt
+FROM mitarbeiter
+GROUP BY abt_id
+HAVING AVG(gehalt) > 4000;`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==2) return {ok:false,msg:`2 Abteilungen erwartet (Vertrieb 20 & Entwicklung 50), bekommen ${t?t.values.length:0}.`};
+      return {ok:true,msg:'HAVING beherrscht — Elite-Abteilungen gefunden.'};
+    }
+  },
+  {
+    id:'m11', diff:3, xp:25, topic:'INSERT', cat:'DML',
+    title:'INSERT — Zeile einfügen',
+    short:'Neue Abteilung anlegen',
+    brief:`
+<p>Füge eine neue Abteilung ein:</p>
+<ul>
+  <li><code>abt_id</code> = 60</li>
+  <li><code>name</code> = 'Marketing'</li>
+  <li><code>standort</code> = 'Köln'</li>
+</ul>
+<h5>Tipp</h5>
+<p>INSERT gibt keine Tabelle zurück. Kontrolliere mit <code>SELECT * FROM abteilung</code>.</p>`,
+    hints:[
+      "Form: INSERT INTO tabelle VALUES (wert1, wert2, ...);",
+      "Strings in einfachen Anführungszeichen: 'Marketing'.",
+      "Lösung: INSERT INTO abteilung VALUES (60, 'Marketing', 'Köln');"
+    ],
+    solution:"INSERT INTO abteilung VALUES (60, 'Marketing', 'Köln');",
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      try{
+        const chk = DB.exec("SELECT * FROM abteilung WHERE abt_id = 60 AND name = 'Marketing' AND standort = 'Köln'");
+        if(!chk[0]||chk[0].values.length===0) return {ok:false,msg:'Zeile nicht (korrekt) eingefügt. Werte prüfen!'};
+        return {ok:true,msg:'Marketing-Abteilung in Köln angelegt!'};
+      }catch(e){return {ok:false,msg:e.message}}
+    }
+  },
+  {
+    id:'m12', diff:3, xp:30, topic:'UPDATE', cat:'DML',
+    title:'UPDATE — Werte ändern',
+    short:'IT-Gehälter um 10% erhöhen',
+    brief:`
+<p>Erhöhe das Gehalt aller Mitarbeiter in Abteilung <strong>10 (IT)</strong> um <strong>10%</strong>.</p>
+<h5>ACHTUNG</h5>
+<p>Ohne <code>WHERE</code> werden <strong>ALLE</strong> Gehälter erhöht. Das wäre ein Disaster.</p>`,
+    hints:[
+      'Syntax: UPDATE tabelle SET spalte = ausdruck WHERE bedingung;',
+      'gehalt * 1.10 = gehalt + 10%.',
+      'Lösung: UPDATE mitarbeiter SET gehalt = gehalt * 1.10 WHERE abt_id = 10;'
+    ],
+    solution:'UPDATE mitarbeiter SET gehalt = gehalt * 1.10 WHERE abt_id = 10;',
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      try{
+        const c1 = DB.exec("SELECT gehalt FROM mitarbeiter WHERE ma_id = 1");
+        const neu = c1[0].values[0][0];
+        if(Math.abs(neu - 4950) > 0.01) return {ok:false,msg:`Annas Gehalt sollte 4950 sein, ist aber ${neu}. Hast du evtl. mehrfach ausgeführt? Nutze Reset.`};
+        const c2 = DB.exec("SELECT gehalt FROM mitarbeiter WHERE ma_id = 3");
+        if(Math.abs(c2[0].values[0][0] - 5200) > 0.01) return {ok:false,msg:'Andere Abteilungen wurden auch geändert. WHERE vergessen?'};
+        return {ok:true,msg:'UPDATE korrekt ausgeführt — nur IT wurde erhöht.'};
+      }catch(e){return {ok:false,msg:e.message}}
+    }
+  },
+  {
+    id:'m13', diff:4, xp:45, topic:'SUBQUERY', cat:'Subqueries',
+    title:'Über dem Durchschnitt',
+    short:'Wer verdient mehr als der Firmen-Schnitt?',
+    brief:`
+<p>Finde alle Mitarbeiter, die <strong>mehr als das firmenweite Durchschnittsgehalt</strong> verdienen.</p>
+<p>Spalten: <code>vorname</code>, <code>nachname</code>, <code>gehalt</code>.</p>
+<h5>Tipp</h5>
+<p>Du brauchst eine Subquery in WHERE: <code>WHERE gehalt > (SELECT AVG(gehalt) FROM mitarbeiter)</code></p>`,
+    hints:[
+      'Eine Subquery ist eine SELECT-Abfrage in Klammern.',
+      'Skalare Subquery (gibt einen Wert zurück): (SELECT AVG(gehalt) FROM mitarbeiter)',
+      'Lösung: SELECT vorname, nachname, gehalt FROM mitarbeiter WHERE gehalt > (SELECT AVG(gehalt) FROM mitarbeiter);'
+    ],
+    solution:`SELECT vorname, nachname, gehalt FROM mitarbeiter
+WHERE gehalt > (SELECT AVG(gehalt) FROM mitarbeiter);`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t) return {ok:false,msg:'Keine Daten.'};
+      if(t.values.length !== 5) return {ok:false,msg:`5 Mitarbeiter erwartet, bekommen ${t.values.length}.`};
+      return {ok:true,msg:'Subquery-Meisterstück! Der Firmen-Schnitt liegt bei ~3992 €.'};
+    }
+  },
+  {
+    id:'m14', diff:4, xp:50, topic:'MULTI-JOIN', cat:'JOINs',
+    title:'Drei-Tabellen-JOIN',
+    short:'Mitarbeiter + Projekt + Stunden',
+    brief:`
+<p>Zeige für jede Mitarbeiter-Projekt-Kombination:</p>
+<ul>
+  <li><code>vorname</code> des Mitarbeiters</li>
+  <li><code>bezeichnung</code> des Projekts</li>
+  <li><code>stunden</code></li>
+</ul>
+<p>Sortiere nach Stunden absteigend.</p>
+<h5>Tipp</h5>
+<p>Drei Tabellen: <code>mitarbeiter</code> → <code>ma_projekt</code> → <code>projekt</code>. Zwei JOINs!</p>`,
+    hints:[
+      'JOINs kannst du kaskadieren: FROM a JOIN b ON ... JOIN c ON ...',
+      'Der erste JOIN verbindet mitarbeiter mit ma_projekt, der zweite ma_projekt mit projekt.',
+      'Nicht vergessen: ORDER BY stunden DESC'
+    ],
+    solution:`SELECT m.vorname, p.bezeichnung, mp.stunden
+FROM mitarbeiter m
+JOIN ma_projekt mp ON m.ma_id = mp.ma_id
+JOIN projekt p ON mp.proj_id = p.proj_id
+ORDER BY mp.stunden DESC;`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t||t.values.length!==12) return {ok:false,msg:`12 Zuordnungen erwartet, bekommen ${t?t.values.length:0}.`};
+      const si = t.columns.map(c=>c.toLowerCase()).indexOf('stunden');
+      if(si<0) return {ok:false,msg:'Spalte stunden fehlt.'};
+      for(let i=1;i<t.values.length;i++) if(t.values[i][si]>t.values[i-1][si]) return {ok:false,msg:'Nicht nach stunden absteigend sortiert.'};
+      return {ok:true,msg:'Drei-Tabellen-JOIN gemeistert — AP2 kann kommen!'};
+    }
+  },
+  {
+    id:'m15', diff:4, xp:60, topic:'ALL-IN-ONE', cat:'Prüfungsniveau',
+    title:'AP2-Finale: Alles kombinieren',
+    short:'JOIN + GROUP BY + HAVING + ORDER BY',
+    brief:`
+<p>Gib für jede Abteilung den <code>name</code> der Abteilung und die <strong>Anzahl der Mitarbeiter</strong> (Alias: <code>anzahl</code>) aus — <em>aber nur</em> Abteilungen mit <strong>mehr als 2 Mitarbeitern</strong>.</p>
+<p>Sortiere nach Anzahl absteigend.</p>
+<h5>Das ist AP2-Niveau</h5>
+<p>Hier kombinierst du JOIN, GROUP BY, HAVING und ORDER BY in einer Query — genau so kommt es in der Prüfung.</p>`,
+    hints:[
+      'Start: JOIN zwischen abteilung und mitarbeiter über abt_id.',
+      'Dann GROUP BY a.name, dann HAVING COUNT(*) > 2.',
+      'Sortierung ganz am Ende: ORDER BY anzahl DESC.'
+    ],
+    solution:`SELECT a.name, COUNT(m.ma_id) AS anzahl
+FROM abteilung a
+INNER JOIN mitarbeiter m ON a.abt_id = m.abt_id
+GROUP BY a.name
+HAVING COUNT(m.ma_id) > 2
+ORDER BY anzahl DESC;`,
+    check:(r)=>{
+      if(!r.ok) return {ok:false,msg:r.err};
+      const t=r.res[0];
+      if(!t) return {ok:false,msg:'Keine Daten.'};
+      if(t.values.length !== 3) return {ok:false,msg:`3 Abteilungen erwartet (IT, Vertrieb, Entwicklung — alle mit 3 MA), bekommen ${t.values.length}.`};
+      for(let row of t.values) if(row[1] <= 2) return {ok:false,msg:'HAVING-Filter falsch (sollte > 2 sein).'};
+      for(let i=1;i<t.values.length;i++) if(t.values[i][1]>t.values[i-1][1]) return {ok:false,msg:'Sortierung nicht absteigend.'};
+      return {ok:true,msg:'🏆 Du bist bereit für die AP2!'};
+    }
+  }
+];
+
+function diffLabel(d){return ['','Einfach','Mittel','Schwer','Prüfungsniveau'][d]}
+
+function renderMissionsList(){
+  const container = document.getElementById('missions-list');
+  container.innerHTML='';
+  let list = MISSIONS.slice();
+  if(STATE.filter === 'open') list = list.filter(m=>!STATE.done.includes(m.id));
+  else if(STATE.filter === 'done') list = list.filter(m=>STATE.done.includes(m.id));
+  else if(STATE.filter !== 'all') list = list.filter(m=>m.diff===parseInt(STATE.filter));
+
+  if(list.length === 0){
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-3)">Keine Challenges in dieser Kategorie.</div>';
+    return;
+  }
+
+  list.forEach(m=>{
+    const idx = MISSIONS.indexOf(m);
+    const done = STATE.done.includes(m.id);
+    const row = document.createElement('div');
+    row.className = 'mission-row' + (done?' done':'');
+    row.innerHTML = `
+      <div class="no">${done?'✓':(idx+1)}</div>
+      <div class="info">
+        <div class="line1">
+          <h4>${m.title}</h4>
+          <span class="tag t-d${m.diff}">${diffLabel(m.diff)}</span>
+          <span class="tag t-topic">${m.topic}</span>
+          <span class="tag" style="color:var(--yellow);background:rgba(234,179,8,.08)">⚡ ${m.xp} XP</span>
+        </div>
+        <div class="line2">${m.short}</div>
+      </div>
+      <div class="arrow">›</div>`;
+    row.addEventListener('click',()=>openMission(m.id));
+    container.appendChild(row);
+  });
+}
+
+function renderHomeSuggestions(){
+  const target = document.getElementById('home-suggestions');
+  target.innerHTML='';
+  // Find first 3 undone missions
+  const next = MISSIONS.filter(m=>!STATE.done.includes(m.id)).slice(0,3);
+  if(next.length === 0){
+    target.innerHTML = '<div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;color:var(--green)">🏆 Alle Challenges gelöst! Du bist AP2-bereit.</div>';
+    return;
+  }
+  next.forEach(m=>{
+    const idx = MISSIONS.indexOf(m);
+    const row = document.createElement('div');
+    row.className='mission-row';
+    row.innerHTML = `
+      <div class="no">${idx+1}</div>
+      <div class="info">
+        <div class="line1">
+          <h4>${m.title}</h4>
+          <span class="tag t-d${m.diff}">${diffLabel(m.diff)}</span>
+          <span class="tag t-topic">${m.topic}</span>
+        </div>
+        <div class="line2">${m.short}</div>
+      </div>
+      <div class="arrow">›</div>`;
+    row.addEventListener('click',()=>openMission(m.id));
+    target.appendChild(row);
+  });
+}
+
+/* ============ MISSION DETAIL ============ */
+function openMission(id){
+  const m = MISSIONS.find(x=>x.id===id);
+  if(!m) return;
+  STATE.currentMission = m;
+  STATE.currentAttempts = 0;
+  STATE.hintsRevealed = 0;
+
+  document.getElementById('m-title').textContent = m.title;
+  document.getElementById('m-category').textContent = m.cat.toUpperCase();
+  document.getElementById('m-diff').textContent = `Schwierigkeit ${m.diff}/4`;
+  document.getElementById('m-xp').textContent = m.xp;
+  document.getElementById('m-attempts').textContent = '0';
+  document.getElementById('m-brief').innerHTML = m.brief;
+  document.getElementById('hint-count').textContent = '0/'+m.hints.length;
+  document.getElementById('editor').value = '-- Challenge: '+m.title+'\n';
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('result-time').textContent = '';
+
+  // Render hints
+  renderHints();
+  // Switch tab back to task
+  switchTab('task');
+
+  go('mission');
+}
+
+function renderHints(){
+  const m = STATE.currentMission;
+  const container = document.getElementById('hint-list');
+  container.innerHTML='';
+  m.hints.forEach((h,i)=>{
+    if(i < STATE.hintsRevealed){
+      const div = document.createElement('div');
+      div.className='hint-revealed';
+      div.innerHTML = `<strong>Hinweis ${i+1}</strong><br>${h}`;
+      container.appendChild(div);
+    } else {
+      const btn = document.createElement('button');
+      btn.className='btn ghost';
+      btn.style='text-align:left;justify-content:flex-start';
+      btn.innerHTML = `🔒 Hinweis ${i+1} freischalten (-5 XP)`;
+      btn.addEventListener('click',()=>{
+        STATE.hintsRevealed++;
+        document.getElementById('hint-count').textContent = STATE.hintsRevealed+'/'+m.hints.length;
+        renderHints();
+      });
+      container.appendChild(btn);
+      // Only show next locked hint button
+      return;
+    }
+  });
+  if(STATE.hintsRevealed >= m.hints.length){
+    const div = document.createElement('div');
+    div.style='font-size:11px;color:var(--ink-3);margin-top:8px;text-align:center';
+    div.textContent = 'Alle Hinweise aufgedeckt.';
+    container.appendChild(div);
+  }
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.panel-tab[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('tab-task').style.display = tab==='task'?'block':'none';
+  document.getElementById('tab-hints').style.display = tab==='hints'?'block':'none';
+}
+document.querySelectorAll('.panel-tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+
+document.getElementById('btn-run').addEventListener('click',()=>{
+  const q = document.getElementById('editor').value;
+  const out = runSQL(q);
+  renderResultTable(document.getElementById('result'), out);
+  document.getElementById('result-time').textContent = out.ms+' ms';
+});
+
+document.getElementById('btn-check').addEventListener('click',()=>{
+  const m = STATE.currentMission;
+  if(!m) return;
+  const q = document.getElementById('editor').value;
+  STATE.currentAttempts++;
+  document.getElementById('m-attempts').textContent = STATE.currentAttempts;
+  const out = runSQL(q);
+  const box = document.getElementById('result');
+  renderResultTable(box, out);
+  document.getElementById('result-time').textContent = out.ms+' ms';
+
+  const verdict = m.check(out);
+  const v = document.createElement('div');
+  v.className = 'verdict ' + (verdict.ok?'ok':'ko');
+  v.innerHTML = `<span class="big">${verdict.ok?'✓':'✗'}</span><div>${verdict.msg}</div>`;
+  box.appendChild(v);
+
+  if(verdict.ok && !STATE.done.includes(m.id)){
+    STATE.done.push(m.id);
+    const xpGained = Math.max(5, m.xp - (STATE.hintsRevealed * 5));
+    addPoints(xpGained);
+    incStreak();
+    save();
+    showToast(`🏆 Challenge gelöst! +${xpGained} XP`);
+    setTimeout(()=>{renderMissionsList();renderHomeSuggestions()},200);
+  } else if(!verdict.ok){
+    if(STATE.currentAttempts === 1) breakStreak();
+  }
+});
+
+document.getElementById('btn-reset').addEventListener('click',async()=>{
+  await initDB();
+  showToast('Datenbank zurückgesetzt');
+});
+
+/* Solution modal */
+const modal = document.getElementById('modal');
+document.getElementById('btn-solution').addEventListener('click',()=>{
+  modal.classList.add('active');
+});
+document.getElementById('modal-cancel').addEventListener('click',()=>modal.classList.remove('active'));
+document.getElementById('modal-ok').addEventListener('click',()=>{
+  modal.classList.remove('active');
+  if(STATE.currentMission) document.getElementById('editor').value = STATE.currentMission.solution;
+  breakStreak();
+});
+
+/* Filter chips */
+document.querySelectorAll('[data-filter]').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('[data-filter]').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    STATE.filter = c.dataset.filter;
+    renderMissionsList();
+  });
+});
+
+/* ============ TUTORIALS ============ */
+const TUTS = [
+  {
+    id:'t1', title:'Grundlagen: Was ist SQL?',
+    body:`
+<h1>Grundlagen: Was ist SQL?</h1>
+<p class="tut-lead">SQL ist die Sprache relationaler Datenbanken — und für die AP2 unverzichtbar.</p>
+
+<p><strong>SQL</strong> steht für <em>Structured Query Language</em> und ist die Standardsprache zum Arbeiten mit <strong>relationalen Datenbanken</strong>. Ob MySQL, PostgreSQL, SQLite, Oracle oder MS SQL Server — die Grundbefehle sind überall fast identisch.</p>
+
+<h2>Warum ist SQL in der AP2 relevant?</h2>
+<p>Als FISI musst du:</p>
+<ul>
+  <li>Kundendatenbanken analysieren und verwalten</li>
+  <li>Einfache bis mittlere Abfragen schreiben</li>
+  <li>Datenmodelle beurteilen und umsetzen</li>
+  <li>Backup- und Recovery-Konzepte verstehen</li>
+</ul>
+
+<p>In der AP2 kommen typischerweise diese Themen:</p>
+<ul>
+  <li><strong>SELECT-Abfragen</strong> mit WHERE, JOIN, GROUP BY</li>
+  <li><strong>ER-Modelle lesen</strong> und in Tabellen überführen</li>
+  <li><strong>Normalisierung</strong> (1. bis 3. Normalform)</li>
+  <li>Kleine <strong>DDL/DML-Aufgaben</strong> (Tabelle anlegen, Daten einfügen)</li>
+</ul>
+
+<h2>Die vier Kategorien von SQL-Befehlen</h2>
+<table>
+<tr><th>Kategorie</th><th>Zweck</th><th>Befehle</th></tr>
+<tr><td><strong>DQL</strong></td><td>Daten abfragen</td><td>SELECT</td></tr>
+<tr><td><strong>DML</strong></td><td>Daten ändern</td><td>INSERT, UPDATE, DELETE</td></tr>
+<tr><td><strong>DDL</strong></td><td>Struktur definieren</td><td>CREATE, ALTER, DROP</td></tr>
+<tr><td><strong>DCL</strong></td><td>Rechte vergeben</td><td>GRANT, REVOKE</td></tr>
+</table>
+
+<h2>Aufbau einer relationalen Datenbank</h2>
+<p>Eine Datenbank besteht aus <strong>Tabellen</strong> (= Relationen). Jede Tabelle hat <strong>Spalten</strong> (Attribute) und <strong>Zeilen</strong> (Datensätze, Tupel).</p>
+
+<pre>mitarbeiter
+┌────────┬──────────┬───────────┬────────┐
+│ ma_id  │ vorname  │ nachname  │ gehalt │
+├────────┼──────────┼───────────┼────────┤
+│   1    │ Anna     │ Müller    │  4500  │
+│   2    │ Ben      │ Schmidt   │  3800  │
+└────────┴──────────┴───────────┴────────┘
+   ↑         ↑
+Primary   Spalten (Attribute)
+  Key</pre>
+
+<div class="callout tip"><strong>Merke</strong>Der <code>PRIMARY KEY</code> identifiziert jede Zeile eindeutig. Ein <code>FOREIGN KEY</code> verweist auf den Primary Key einer anderen Tabelle und stellt Beziehungen her.</div>
+
+<h2>Dein erster Befehl</h2>
+<pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter;</pre>
+<p>Das gibt <em>alle Spalten</em> (<code>*</code>) aller Zeilen der Tabelle <code>mitarbeiter</code> zurück. Probier's gleich im <strong>Playground</strong> aus!</p>
+`
+  },
+  {
+    id:'t2', title:'SELECT, WHERE, ORDER BY',
+    body:`
+<h1>SELECT, WHERE, ORDER BY</h1>
+<p class="tut-lead">Der Kern jeder SQL-Abfrage. 80% aller AP2-Aufgaben starten hier.</p>
+
+<h2>Grundaufbau</h2>
+<pre><span class="kw">SELECT</span> &lt;spalten&gt;
+<span class="kw">FROM</span> &lt;tabelle&gt;
+<span class="kw">WHERE</span> &lt;bedingung&gt;
+<span class="kw">ORDER BY</span> &lt;spalte&gt; [ASC|DESC]
+<span class="kw">LIMIT</span> &lt;anzahl&gt;;</pre>
+
+<h2>Nur bestimmte Spalten</h2>
+<pre><span class="kw">SELECT</span> vorname, nachname, gehalt
+<span class="kw">FROM</span> mitarbeiter;</pre>
+
+<h2>Bedingungen mit WHERE</h2>
+<p>Vergleichsoperatoren: <code>=</code>, <code>&lt;&gt;</code> (ungleich), <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></p>
+<pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter
+<span class="kw">WHERE</span> gehalt &gt; 4000;</pre>
+
+<h2>Logische Operatoren</h2>
+<ul>
+  <li><code>AND</code> — beide Bedingungen müssen zutreffen</li>
+  <li><code>OR</code> — mindestens eine muss zutreffen</li>
+  <li><code>NOT</code> — negiert die Bedingung</li>
+</ul>
+<pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter
+<span class="kw">WHERE</span> gehalt &gt; 3000 <span class="kw">AND</span> abt_id = 10;</pre>
+
+<h2>Weitere WHERE-Tricks</h2>
+<table>
+<tr><th>Operator</th><th>Bedeutung</th><th>Beispiel</th></tr>
+<tr><td><code>BETWEEN</code></td><td>Bereich</td><td><code>gehalt BETWEEN 3000 AND 5000</code></td></tr>
+<tr><td><code>IN</code></td><td>Liste</td><td><code>abt_id IN (10, 20, 30)</code></td></tr>
+<tr><td><code>LIKE</code></td><td>Muster</td><td><code>nachname LIKE 'M%'</code></td></tr>
+<tr><td><code>IS NULL</code></td><td>Auf NULL prüfen</td><td><code>chef_id IS NULL</code></td></tr>
+</table>
+
+<div class="callout warn"><strong>Achtung NULL</strong><code>= NULL</code> funktioniert NICHT! NULL wird immer mit <code>IS NULL</code> oder <code>IS NOT NULL</code> geprüft, weil NULL "unbekannt" bedeutet — und unbekannt ist weder gleich noch ungleich etwas.</div>
+
+<h2>LIKE Wildcards</h2>
+<ul>
+  <li><code>%</code> — beliebig viele Zeichen (auch 0)</li>
+  <li><code>_</code> — genau ein Zeichen</li>
+</ul>
+<pre><span class="cmt">-- Alle Nachnamen, die mit 'M' anfangen</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter <span class="kw">WHERE</span> nachname <span class="kw">LIKE</span> <span class="str">'M%'</span>;
+
+<span class="cmt">-- Alle Städte mit genau 6 Zeichen</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> kunde <span class="kw">WHERE</span> stadt <span class="kw">LIKE</span> <span class="str">'______'</span>;</pre>
+
+<h2>Sortieren mit ORDER BY</h2>
+<pre><span class="kw">SELECT</span> vorname, gehalt <span class="kw">FROM</span> mitarbeiter
+<span class="kw">ORDER BY</span> gehalt <span class="kw">DESC</span>;
+<span class="cmt">-- ASC = aufsteigend (Standard)
+-- DESC = absteigend</span></pre>
+
+<h2>LIMIT — Nur die ersten N</h2>
+<pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter
+<span class="kw">ORDER BY</span> gehalt <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> 3;   <span class="cmt">-- Top 3 Verdiener</span></pre>
+
+<h2>DISTINCT — Duplikate entfernen</h2>
+<pre><span class="kw">SELECT DISTINCT</span> stadt <span class="kw">FROM</span> kunde;
+<span class="cmt">-- zeigt jede Stadt nur einmal</span></pre>
+
+<div class="callout tip"><strong>Prüfungs-Tipp</strong>In der AP2 wird gerne gefragt: "Welche Mitarbeiter verdienen mehr als X?" oder "Alle Kunden aus Stadt Y". Das sind reine SELECT-WHERE-Aufgaben — die solltest du mit geschlossenen Augen können.</div>
+`
+  },
+  {
+    id:'t3', title:'JOINs: Tabellen verbinden',
+    body:`
+<h1>JOINs: Tabellen verbinden</h1>
+<p class="tut-lead">Daten liegen auf mehreren Tabellen — mit JOINs holst du sie zusammen.</p>
+
+<h2>Warum JOINs?</h2>
+<p>In unserer Datenbank steht der Name der Abteilung nicht bei jedem Mitarbeiter (das wäre redundant), sondern es gibt nur die <code>abt_id</code>. Um "Anna arbeitet in der IT" auszugeben, musst du <code>mitarbeiter</code> und <code>abteilung</code> verbinden.</p>
+
+<h2>Die JOIN-Typen</h2>
+<table>
+<tr><th>JOIN-Typ</th><th>Bedeutung</th></tr>
+<tr><td><strong>INNER JOIN</strong></td><td>Nur Zeilen, die in <em>beiden</em> Tabellen einen Match haben</td></tr>
+<tr><td><strong>LEFT JOIN</strong></td><td>Alle aus links + passende aus rechts (NULL wenn kein Match)</td></tr>
+<tr><td><strong>RIGHT JOIN</strong></td><td>Umgekehrt (in SQLite nicht unterstützt)</td></tr>
+<tr><td><strong>FULL OUTER JOIN</strong></td><td>Alles aus beiden Seiten</td></tr>
+<tr><td><strong>CROSS JOIN</strong></td><td>Kartesisches Produkt (alle × alle)</td></tr>
+</table>
+
+<h2>INNER JOIN — der Klassiker</h2>
+<pre><span class="kw">SELECT</span> m.vorname, m.nachname, a.name <span class="kw">AS</span> abteilung
+<span class="kw">FROM</span> mitarbeiter m
+<span class="kw">INNER JOIN</span> abteilung a <span class="kw">ON</span> m.abt_id = a.abt_id;</pre>
+
+<p><strong>Was passiert hier?</strong></p>
+<ul>
+  <li><code>m</code> und <code>a</code> sind <strong>Aliase</strong> (Kurznamen)</li>
+  <li><code>ON m.abt_id = a.abt_id</code> — die Verknüpfungsbedingung</li>
+  <li><code>AS abteilung</code> — benennt die Spalte im Ergebnis um</li>
+</ul>
+
+<h2>LEFT JOIN — niemand wird vergessen</h2>
+<pre><span class="kw">SELECT</span> m.vorname, a.name
+<span class="kw">FROM</span> mitarbeiter m
+<span class="kw">LEFT JOIN</span> abteilung a <span class="kw">ON</span> m.abt_id = a.abt_id;</pre>
+<p>Auch Mitarbeiter <em>ohne</em> Abteilung erscheinen — bei <code>a.name</code> steht dann NULL.</p>
+
+<h2>Mehrere JOINs kombinieren</h2>
+<pre><span class="kw">SELECT</span> m.vorname, p.bezeichnung, mp.stunden
+<span class="kw">FROM</span> mitarbeiter m
+<span class="kw">INNER JOIN</span> ma_projekt mp <span class="kw">ON</span> m.ma_id = mp.ma_id
+<span class="kw">INNER JOIN</span> projekt p <span class="kw">ON</span> mp.proj_id = p.proj_id;</pre>
+<p>So verbindest du Mitarbeiter über die Zwischentabelle <code>ma_projekt</code> mit ihren Projekten (n:m-Beziehung!).</p>
+
+<h2>SELF JOIN — Tabelle mit sich selbst</h2>
+<pre><span class="cmt">-- Wer ist Annas Chef?</span>
+<span class="kw">SELECT</span> ma.vorname <span class="kw">AS</span> mitarbeiter, chef.vorname <span class="kw">AS</span> chef
+<span class="kw">FROM</span> mitarbeiter ma
+<span class="kw">LEFT JOIN</span> mitarbeiter chef <span class="kw">ON</span> ma.chef_id = chef.ma_id;</pre>
+
+<div class="callout warn"><strong>Häufiger Fehler</strong>Wenn du zwei Tabellen ohne JOIN-Bedingung schreibst (<code>FROM a, b</code>) bekommst du ein <strong>kartesisches Produkt</strong> — jede Zeile von A × jede Zeile von B. Meistens ein Bug! Immer eine Bedingung angeben.</div>
+
+<div class="callout tip"><strong>Merk-Hilfe</strong><strong>INNER</strong> = Schnittmenge<br><strong>LEFT</strong> = alles links + Schnittmenge<br><strong>RIGHT</strong> = alles rechts + Schnittmenge<br><strong>FULL</strong> = beides komplett</div>
+`
+  },
+  {
+    id:'t4', title:'Aggregation: GROUP BY & HAVING',
+    body:`
+<h1>Aggregation: GROUP BY & HAVING</h1>
+<p class="tut-lead">Daten zusammenfassen — Summen, Durchschnitte, Anzahlen pro Gruppe.</p>
+
+<h2>Die 5 wichtigen Aggregatfunktionen</h2>
+<table>
+<tr><th>Funktion</th><th>Zweck</th></tr>
+<tr><td><code>COUNT(*)</code></td><td>Zählt alle Zeilen</td></tr>
+<tr><td><code>COUNT(spalte)</code></td><td>Zählt Zeilen wo die Spalte nicht NULL ist</td></tr>
+<tr><td><code>SUM(spalte)</code></td><td>Summiert Werte</td></tr>
+<tr><td><code>AVG(spalte)</code></td><td>Durchschnitt</td></tr>
+<tr><td><code>MIN(spalte)</code> / <code>MAX(spalte)</code></td><td>Kleinster / größter Wert</td></tr>
+</table>
+
+<h2>Ohne GROUP BY: eine Zahl fürs Ganze</h2>
+<pre><span class="kw">SELECT COUNT</span>(*) <span class="kw">AS</span> anzahl_mitarbeiter <span class="kw">FROM</span> mitarbeiter;
+<span class="kw">SELECT AVG</span>(gehalt) <span class="kw">AS</span> durchschnitt <span class="kw">FROM</span> mitarbeiter;</pre>
+
+<h2>Mit GROUP BY: eine Zahl pro Gruppe</h2>
+<pre><span class="kw">SELECT</span> abt_id, <span class="kw">COUNT</span>(*) <span class="kw">AS</span> anzahl, <span class="kw">AVG</span>(gehalt) <span class="kw">AS</span> schnitt
+<span class="kw">FROM</span> mitarbeiter
+<span class="kw">GROUP BY</span> abt_id;</pre>
+<p>Das gibt pro Abteilung die Mitarbeiterzahl und das Durchschnittsgehalt.</p>
+
+<div class="callout warn"><strong>Die goldene Regel von GROUP BY</strong>Jede Spalte im SELECT muss entweder in GROUP BY stehen ODER in einer Aggregatfunktion sein. Sonst: Fehler oder undefiniertes Verhalten.</div>
+
+<h2>HAVING vs. WHERE</h2>
+<ul>
+  <li><code>WHERE</code> filtert <strong>vor</strong> der Gruppierung (einzelne Zeilen)</li>
+  <li><code>HAVING</code> filtert <strong>nach</strong> der Gruppierung (auf aggregierte Werte)</li>
+</ul>
+
+<pre><span class="cmt">-- Abteilungen mit mehr als 2 Mitarbeitern</span>
+<span class="kw">SELECT</span> abt_id, <span class="kw">COUNT</span>(*) <span class="kw">AS</span> anzahl
+<span class="kw">FROM</span> mitarbeiter
+<span class="kw">GROUP BY</span> abt_id
+<span class="kw">HAVING COUNT</span>(*) &gt; 2;</pre>
+
+<h2>Reihenfolge der Klauseln — IMMER so</h2>
+<pre><span class="kw">SELECT</span> ...
+<span class="kw">FROM</span> ...
+<span class="kw">WHERE</span> ...        <span class="cmt">← filtert Zeilen</span>
+<span class="kw">GROUP BY</span> ...     <span class="cmt">← gruppiert</span>
+<span class="kw">HAVING</span> ...       <span class="cmt">← filtert Gruppen</span>
+<span class="kw">ORDER BY</span> ...     <span class="cmt">← sortiert</span>
+<span class="kw">LIMIT</span> ...        <span class="cmt">← begrenzt</span></pre>
+
+<h2>Typisches AP2-Beispiel</h2>
+<pre><span class="cmt">-- Summe der Projektbudgets pro Kunde, nur über 50.000 €</span>
+<span class="kw">SELECT</span> k.firma, <span class="kw">SUM</span>(p.budget) <span class="kw">AS</span> gesamt
+<span class="kw">FROM</span> kunde k
+<span class="kw">JOIN</span> projekt p <span class="kw">ON</span> k.kunde_id = p.kunde_id
+<span class="kw">GROUP BY</span> k.firma
+<span class="kw">HAVING SUM</span>(p.budget) &gt; 50000
+<span class="kw">ORDER BY</span> gesamt <span class="kw">DESC</span>;</pre>
+
+<div class="callout tip"><strong>Prüfungs-Tipp</strong>Typische Fragen: "Wie viele X pro Y?", "Durchschnitt von X je Y", "Welche Y haben mehr als N X?". Sobald <strong>"pro"</strong> oder <strong>"je"</strong> im Text steht → GROUP BY!</div>
+`
+  },
+  {
+    id:'t5', title:'DML: INSERT, UPDATE, DELETE',
+    body:`
+<h1>DML: INSERT, UPDATE, DELETE</h1>
+<p class="tut-lead">Datenmanipulation — Daten einfügen, ändern, löschen.</p>
+
+<h2>INSERT — Daten einfügen</h2>
+<pre><span class="cmt">-- Alle Spalten (in Reihenfolge der Tabelle):</span>
+<span class="kw">INSERT INTO</span> abteilung
+<span class="kw">VALUES</span> (60, <span class="str">'Marketing'</span>, <span class="str">'Köln'</span>);
+
+<span class="cmt">-- Nur bestimmte Spalten:</span>
+<span class="kw">INSERT INTO</span> abteilung (abt_id, name)
+<span class="kw">VALUES</span> (70, <span class="str">'Design'</span>);
+
+<span class="cmt">-- Mehrere Zeilen:</span>
+<span class="kw">INSERT INTO</span> abteilung <span class="kw">VALUES</span>
+  (80, <span class="str">'HR'</span>, <span class="str">'Berlin'</span>),
+  (90, <span class="str">'Legal'</span>, <span class="str">'Frankfurt'</span>);</pre>
+
+<div class="callout warn"><strong>NOT NULL & PRIMARY KEY</strong>Wenn Spalten als NOT NULL definiert sind, musst du sie füllen. Keine Duplikate bei UNIQUE oder PRIMARY KEY.</div>
+
+<h2>UPDATE — Daten ändern</h2>
+<pre><span class="kw">UPDATE</span> mitarbeiter
+<span class="kw">SET</span> gehalt = gehalt * 1.05   <span class="cmt">-- 5% mehr</span>
+<span class="kw">WHERE</span> abt_id = 10;</pre>
+
+<div class="callout warn"><strong>LEBENSWICHTIG</strong>IMMER ein <code>WHERE</code> mitschreiben! Ohne WHERE werden <strong>alle Zeilen</strong> aktualisiert. Genau so gibt's schon mal versehentlich 1000 neue Millionäre in der Firma.</div>
+
+<h2>Mehrere Spalten auf einmal</h2>
+<pre><span class="kw">UPDATE</span> mitarbeiter
+<span class="kw">SET</span> gehalt = 5000, abt_id = 50
+<span class="kw">WHERE</span> ma_id = 4;</pre>
+
+<h2>DELETE — Daten löschen</h2>
+<pre><span class="kw">DELETE FROM</span> mitarbeiter
+<span class="kw">WHERE</span> ma_id = 12;</pre>
+
+<div class="callout warn"><strong>Ohne WHERE = Tabelle leer</strong><code>DELETE FROM mitarbeiter;</code> löscht ALLE Zeilen. In der Produktion: gefährlich. In der Prüfung: Punktabzug.</div>
+
+<h2>TRUNCATE vs DELETE</h2>
+<ul>
+  <li><code>DELETE FROM tab;</code> — löscht Zeilen, geht durch WHERE, auslogbar, rollbackbar</li>
+  <li><code>TRUNCATE TABLE tab;</code> — schneller, setzt auch Autoincrement zurück, nicht rollbackbar</li>
+</ul>
+
+<h2>Referentielle Integrität</h2>
+<p>Wenn du versuchst, einen Mitarbeiter zu löschen, der noch in <code>ma_projekt</code> vorkommt, verweigert die DB das (FOREIGN KEY). Optionen:</p>
+<ul>
+  <li><code>ON DELETE CASCADE</code> — Kindzeilen werden mitgelöscht</li>
+  <li><code>ON DELETE SET NULL</code> — FK wird auf NULL gesetzt</li>
+  <li><code>ON DELETE RESTRICT</code> — Löschen verboten (Default)</li>
+</ul>
+
+<h2>Transaktionen — wichtig für die AP2</h2>
+<pre><span class="kw">BEGIN</span>;
+<span class="kw">UPDATE</span> konto <span class="kw">SET</span> saldo = saldo - 100 <span class="kw">WHERE</span> id = 1;
+<span class="kw">UPDATE</span> konto <span class="kw">SET</span> saldo = saldo + 100 <span class="kw">WHERE</span> id = 2;
+<span class="kw">COMMIT</span>;   <span class="cmt">-- oder ROLLBACK; bei Fehler</span></pre>
+<p>Eine Transaktion ist <strong>atomar</strong>: entweder alle Änderungen werden übernommen (COMMIT) oder keine (ROLLBACK). Das ist das ACID-Prinzip!</p>
+
+<div class="callout tip"><strong>ACID merken</strong><strong>A</strong>tomicity · <strong>C</strong>onsistency · <strong>I</strong>solation · <strong>D</strong>urability</div>
+`
+  },
+  {
+    id:'t6', title:'DDL: CREATE TABLE & Constraints',
+    body:`
+<h1>DDL: Datenbankstruktur definieren</h1>
+<p class="tut-lead">Tabellen anlegen, ändern, löschen — und Constraints richtig setzen.</p>
+
+<h2>CREATE TABLE</h2>
+<pre><span class="kw">CREATE TABLE</span> mitarbeiter (
+  ma_id <span class="kw">INTEGER PRIMARY KEY</span>,
+  vorname <span class="kw">TEXT NOT NULL</span>,
+  nachname <span class="kw">TEXT NOT NULL</span>,
+  gehalt <span class="kw">REAL DEFAULT</span> 0,
+  einstellung <span class="kw">DATE</span>,
+  abt_id <span class="kw">INTEGER</span>,
+  <span class="kw">FOREIGN KEY</span> (abt_id) <span class="kw">REFERENCES</span> abteilung(abt_id)
+);</pre>
+
+<h2>Die wichtigsten Datentypen</h2>
+<table>
+<tr><th>Typ</th><th>Zweck</th><th>Beispiel</th></tr>
+<tr><td><code>INTEGER</code></td><td>Ganzzahl</td><td>42</td></tr>
+<tr><td><code>REAL</code> / <code>DECIMAL(p,s)</code></td><td>Dezimalzahl</td><td>3.14</td></tr>
+<tr><td><code>VARCHAR(n)</code></td><td>Text mit max. Länge</td><td>'Müller'</td></tr>
+<tr><td><code>TEXT</code></td><td>Langer Text</td><td>Beliebig lang</td></tr>
+<tr><td><code>DATE</code></td><td>Datum</td><td>'2024-10-15'</td></tr>
+<tr><td><code>DATETIME</code></td><td>Datum + Uhrzeit</td><td>'2024-10-15 12:30:00'</td></tr>
+<tr><td><code>BOOLEAN</code></td><td>Wahr/Falsch</td><td>TRUE, FALSE</td></tr>
+</table>
+
+<h2>Constraints (Einschränkungen)</h2>
+<table>
+<tr><th>Constraint</th><th>Bedeutung</th></tr>
+<tr><td><code>PRIMARY KEY</code></td><td>Eindeutiger Bezeichner, nicht NULL, nur einer pro Tabelle</td></tr>
+<tr><td><code>FOREIGN KEY</code></td><td>Verweis auf andere Tabelle</td></tr>
+<tr><td><code>NOT NULL</code></td><td>Pflichtfeld</td></tr>
+<tr><td><code>UNIQUE</code></td><td>Keine Duplikate erlaubt</td></tr>
+<tr><td><code>DEFAULT x</code></td><td>Standardwert</td></tr>
+<tr><td><code>CHECK (bedingung)</code></td><td>Wert muss Bedingung erfüllen</td></tr>
+</table>
+
+<h2>Beispiel mit allen Constraints</h2>
+<pre><span class="kw">CREATE TABLE</span> produkt (
+  prod_id <span class="kw">INTEGER PRIMARY KEY</span>,
+  name <span class="kw">VARCHAR</span>(100) <span class="kw">NOT NULL UNIQUE</span>,
+  preis <span class="kw">DECIMAL</span>(10,2) <span class="kw">CHECK</span> (preis &gt;= 0),
+  kategorie <span class="kw">VARCHAR</span>(50) <span class="kw">DEFAULT</span> <span class="str">'Sonstige'</span>,
+  lagerbestand <span class="kw">INTEGER DEFAULT</span> 0
+);</pre>
+
+<h2>ALTER TABLE — Tabelle ändern</h2>
+<pre><span class="cmt">-- Spalte hinzufügen</span>
+<span class="kw">ALTER TABLE</span> mitarbeiter <span class="kw">ADD COLUMN</span> email <span class="kw">TEXT</span>;
+
+<span class="cmt">-- Spalte löschen</span>
+<span class="kw">ALTER TABLE</span> mitarbeiter <span class="kw">DROP COLUMN</span> email;
+
+<span class="cmt">-- Spalte umbenennen</span>
+<span class="kw">ALTER TABLE</span> mitarbeiter <span class="kw">RENAME COLUMN</span> vorname <span class="kw">TO</span> firstname;</pre>
+
+<h2>DROP TABLE</h2>
+<pre><span class="kw">DROP TABLE</span> mitarbeiter;   <span class="cmt">-- weg! Mit allen Daten!</span></pre>
+
+<div class="callout warn"><strong>AP2 Klassiker</strong>Die Aufgabe lautet oft: "Erstellen Sie ein CREATE-TABLE-Statement zum gegebenen ER-Modell". Achte auf:<br>• Jede Entität → eine Tabelle<br>• Jedes Attribut → eine Spalte mit passendem Typ<br>• Primärschlüssel markieren<br>• Fremdschlüssel mit REFERENCES<br>• NOT NULL wo sinnvoll</div>
+
+<h2>Index erstellen</h2>
+<pre><span class="kw">CREATE INDEX</span> idx_nachname <span class="kw">ON</span> mitarbeiter(nachname);</pre>
+<p>Indizes beschleunigen WHERE-Abfragen, kosten aber Speicher und verlangsamen INSERTs. Auf häufig gefilterten Spalten sinnvoll.</p>
+`
+  },
+  {
+    id:'t7', title:'Normalisierung & ER-Modell',
+    body:`
+<h1>Normalisierung & ER-Modell</h1>
+<p class="tut-lead">Sauberes Datenbankdesign — prüfungsrelevant!</p>
+
+<p>Ein gutes Datenbankdesign vermeidet <strong>Redundanzen</strong> (= mehrfach gespeicherte Daten) und <strong>Anomalien</strong> (= Probleme beim Einfügen, Ändern oder Löschen).</p>
+
+<h2>Warum normalisieren?</h2>
+<p>Stell dir vor, bei jedem Mitarbeiter steht der komplette Abteilungsname:</p>
+<pre>ma_id | name   | abt_name        | abt_standort
+  1   | Anna   | IT              | Berlin
+  2   | Ben    | IT              | Berlin
+  3   | Clara  | Vertrieb        | München</pre>
+
+<p><strong>Probleme:</strong></p>
+<ul>
+  <li><strong>Einfüge-Anomalie:</strong> Neue Abteilung ohne Mitarbeiter? Nicht möglich.</li>
+  <li><strong>Änderungs-Anomalie:</strong> Standort ändert sich → alle Zeilen ändern</li>
+  <li><strong>Lösch-Anomalie:</strong> Letzten IT-ler gelöscht → Abteilung weg</li>
+</ul>
+
+<h2>1. Normalform (1NF)</h2>
+<p><strong>Regel:</strong> Alle Attribute sind <em>atomar</em> — keine Listen, keine Mehrfachwerte in einer Zelle.</p>
+<pre><span class="cmt">-- VERLETZT 1NF:</span>
+mitarbeiter(id, name, telefone)
+  1, Anna, "0301234, 01761111"
+
+<span class="cmt">-- 1NF KORREKT:</span>
+mitarbeiter(id, name)
+telefon(ma_id, nummer)</pre>
+
+<h2>2. Normalform (2NF)</h2>
+<p><strong>Regel:</strong> 1NF erfüllt <em>und</em> jedes Nicht-Schlüssel-Attribut hängt vom <em>gesamten</em> Primärschlüssel ab (relevant bei zusammengesetzten PKs).</p>
+<pre><span class="cmt">-- VERLETZT 2NF (PK: best_id, prod_id):</span>
+bestellung(best_id, prod_id, menge, kundenname)
+                                     <span class="cmt">└── hängt nur von best_id ab!</span>
+
+<span class="cmt">-- 2NF KORREKT:</span>
+bestellung(best_id, kundenname)
+bestellposition(best_id, prod_id, menge)</pre>
+
+<h2>3. Normalform (3NF)</h2>
+<p><strong>Regel:</strong> 2NF erfüllt <em>und</em> keine transitiven Abhängigkeiten (Nicht-Schlüssel → Nicht-Schlüssel).</p>
+<pre><span class="cmt">-- VERLETZT 3NF:</span>
+mitarbeiter(ma_id, name, plz, stadt)
+                         <span class="cmt">└── plz bestimmt stadt!</span>
+
+<span class="cmt">-- 3NF KORREKT:</span>
+mitarbeiter(ma_id, name, plz)
+plz_ort(plz, stadt)</pre>
+
+<div class="callout tip"><strong>Merksatz</strong>Jedes Nicht-Schlüssel-Attribut hängt ab vom <strong>Schlüssel</strong> (1NF), vom <strong>ganzen Schlüssel</strong> (2NF), und <strong>von nichts als dem Schlüssel</strong> (3NF).<br><br>"So help me Codd."</div>
+
+<h2>ER-Modell (Entity-Relationship)</h2>
+<p>Ein ER-Modell beschreibt die Datenbank grafisch, <em>bevor</em> du Tabellen baust.</p>
+
+<p><strong>Notation (Chen):</strong></p>
+<ul>
+  <li><strong>Rechtecke</strong> = Entitäten (z.B. Mitarbeiter, Projekt)</li>
+  <li><strong>Ovale</strong> = Attribute (z.B. Name, Gehalt)</li>
+  <li><strong>Rauten</strong> = Beziehungen (z.B. "arbeitet an")</li>
+</ul>
+
+<h2>Kardinalitäten</h2>
+<table>
+<tr><th>Typ</th><th>Bedeutung</th><th>Beispiel</th></tr>
+<tr><td><strong>1:1</strong></td><td>Jedes A hat genau ein B</td><td>Person ↔ Pass</td></tr>
+<tr><td><strong>1:n</strong></td><td>Ein A hat viele B, B gehört zu einem A</td><td>Abteilung ↔ Mitarbeiter</td></tr>
+<tr><td><strong>n:m</strong></td><td>Viele A ↔ viele B</td><td>Mitarbeiter ↔ Projekt</td></tr>
+</table>
+
+<h2>n:m auflösen</h2>
+<p>In relationalen DBs gibt's kein direktes n:m. Lösung: <strong>Zwischentabelle</strong> (Assoziationstabelle).</p>
+<pre><span class="cmt">-- Statt "Mitarbeiter ↔↔ Projekt":</span>
+mitarbeiter(ma_id, ...)
+projekt(proj_id, ...)
+ma_projekt(ma_id, proj_id, stunden)   <span class="cmt">← Zwischentabelle</span>
+   <span class="cmt">└── PK ist kombiniert (ma_id, proj_id)</span></pre>
+
+<h2>Vom ER-Modell zur Tabelle</h2>
+<ol>
+  <li>Jede Entität → eine Tabelle mit PK</li>
+  <li>1:n → Fremdschlüssel in die "n-Seite" (z.B. abt_id in mitarbeiter)</li>
+  <li>n:m → eigene Zwischentabelle mit kombiniertem PK</li>
+  <li>1:1 → FK in eine Seite (die "unbedingte")</li>
+</ol>
+
+<div class="callout warn"><strong>AP2 Standard-Aufgabe</strong>Gegeben: ER-Diagramm mit 3-4 Entitäten. Gefragt: "Setzen Sie das in CREATE-TABLE-Statements um." Immer PKs, FKs, NOT NULL beachten!</div>
+
+<h2>Subqueries & Views — Ausblick</h2>
+<pre><span class="cmt">-- Subquery: Verschachtelte Abfrage</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter
+<span class="kw">WHERE</span> gehalt &gt; (<span class="kw">SELECT AVG</span>(gehalt) <span class="kw">FROM</span> mitarbeiter);
+
+<span class="cmt">-- View: gespeicherte Abfrage</span>
+<span class="kw">CREATE VIEW</span> teure_ma <span class="kw">AS</span>
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> mitarbeiter <span class="kw">WHERE</span> gehalt &gt; 4000;</pre>
+`
+  }
+];
+
+function renderTutorials(){
+  const side = document.getElementById('tut-sidebar');
+  side.innerHTML='';
+  TUTS.forEach((t,i)=>{
+    const item = document.createElement('div');
+    item.className='tut-item';
+    item.innerHTML = `<div class="n">${i+1}</div><div>${t.title}</div>`;
+    item.addEventListener('click',()=>{
+      document.querySelectorAll('.tut-item').forEach(x=>x.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('tut-content').innerHTML = t.body;
+      document.getElementById('tut-content').scrollTop = 0;
+    });
+    side.appendChild(item);
+  });
+  side.firstChild.click();
+}
+
+/* ============ CHEATSHEET ============ */
+const CHEAT = [
+  {title:'SELECT Grundform', code:`SELECT spalte1, spalte2
+FROM tabelle
+WHERE bedingung
+ORDER BY spalte DESC
+LIMIT 10;`, note:'Reihenfolge immer so beachten.'},
+  {title:'WHERE Operatoren', code:`=  <>  <  >  <=  >=
+AND  OR  NOT
+BETWEEN 100 AND 500
+IN (1, 2, 3)
+LIKE 'M%'
+IS NULL`, note:'NULL niemals mit = prüfen!'},
+  {title:'Aggregate', code:`COUNT(*)
+COUNT(spalte)
+SUM(x), AVG(x)
+MIN(x), MAX(x)`, note:'Oft mit GROUP BY kombiniert.'},
+  {title:'GROUP BY + HAVING', code:`SELECT abt, COUNT(*) AS n
+FROM mitarbeiter
+GROUP BY abt
+HAVING COUNT(*) > 2;`, note:'HAVING filtert Gruppen, WHERE filtert Zeilen.'},
+  {title:'INNER JOIN', code:`SELECT m.name, a.name
+FROM mitarbeiter m
+INNER JOIN abteilung a
+  ON m.abt_id = a.abt_id;`, note:'Nur Matches beider Seiten.'},
+  {title:'LEFT JOIN', code:`SELECT m.name, a.name
+FROM mitarbeiter m
+LEFT JOIN abteilung a
+  ON m.abt_id = a.abt_id;`, note:'Alle aus m, NULL wenn kein Match.'},
+  {title:'INSERT', code:`INSERT INTO tab (s1, s2)
+VALUES (wert1, wert2);
+
+INSERT INTO tab VALUES
+  (1,'a'), (2,'b');`, note:'Reihenfolge beachten.'},
+  {title:'UPDATE', code:`UPDATE tab
+SET spalte = wert
+WHERE bedingung;`, note:'⚠ IMMER WHERE setzen!'},
+  {title:'DELETE', code:`DELETE FROM tab
+WHERE bedingung;`, note:'⚠ Ohne WHERE = leere Tabelle.'},
+  {title:'CREATE TABLE', code:`CREATE TABLE kunde (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email TEXT UNIQUE,
+  stadt TEXT DEFAULT 'Berlin'
+);`, note:'Constraints: PK, FK, NOT NULL, UNIQUE, DEFAULT, CHECK.'},
+  {title:'FOREIGN KEY', code:`CREATE TABLE bestellung (
+  id INT PRIMARY KEY,
+  kunde_id INT,
+  FOREIGN KEY (kunde_id)
+    REFERENCES kunde(id)
+);`, note:'Referenzielle Integrität.'},
+  {title:'ALTER / DROP', code:`ALTER TABLE tab
+  ADD COLUMN email TEXT;
+
+ALTER TABLE tab
+  RENAME TO new_name;
+
+DROP TABLE tab;`, note:'DROP löscht alles, inkl. Daten.'},
+  {title:'Subquery', code:`SELECT * FROM mitarbeiter
+WHERE gehalt > (
+  SELECT AVG(gehalt)
+  FROM mitarbeiter
+);`, note:'Eine Query in einer Query.'},
+  {title:'DISTINCT', code:`SELECT DISTINCT stadt
+FROM kunde;`, note:'Duplikate entfernen.'},
+  {title:'UNION', code:`SELECT name FROM ma
+UNION
+SELECT name FROM kunde;`, note:'Spaltenzahl muss passen. UNION ALL behält Duplikate.'},
+  {title:'TRANSAKTIONEN', code:`BEGIN;
+UPDATE konto SET s = s-100 WHERE id=1;
+UPDATE konto SET s = s+100 WHERE id=2;
+COMMIT;
+-- oder ROLLBACK;`, note:'ACID-Prinzip.'},
+];
+
+function renderCheat(){
+  const grid = document.getElementById('cheat-grid');
+  grid.innerHTML='';
+  CHEAT.forEach(c=>{
+    const el = document.createElement('div');
+    el.className='cheat-card';
+    el.innerHTML = `<h4>${c.title}</h4><pre>${c.code}</pre><div class="note">${c.note}</div>`;
+    grid.appendChild(el);
+  });
+}
+
+/* ============ PLAYGROUND ============ */
+document.getElementById('pg-run').addEventListener('click',()=>{
+  const out = runSQL(document.getElementById('pg-editor').value);
+  renderResultTable(document.getElementById('pg-result'), out);
+  document.getElementById('pg-time').textContent = out.ms+' ms';
+});
+document.getElementById('pg-clear').addEventListener('click',()=>document.getElementById('pg-editor').value='');
+document.getElementById('pg-reset').addEventListener('click',async()=>{
+  await initDB();
+  renderSchemaPanel(document.getElementById('pg-schema'), (n)=>{
+    document.getElementById('pg-editor').value = `SELECT * FROM ${n} LIMIT 10;`;
+  });
+  showToast('Datenbank zurückgesetzt');
+});
+
+/* ============ EXAM ============ */
+const EXAM_QUESTIONS = [
+  {q:'Gib alle Produkte der Kategorie "Hardware" aus, sortiert nach Preis absteigend.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length===7&&r.res[0].values[0][3]===1299},
+  {q:'Finde alle Mitarbeiter, deren Einstellungsdatum vor 2020 liegt.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length===4},
+  {q:'Füge ein neues Produkt ein: prod_id=11, name="Drucker", kategorie="Hardware", preis=249, lagerbestand=30.',
+   check:r=>{if(!r.ok)return false;try{const c=DB.exec("SELECT * FROM produkt WHERE prod_id=11 AND name='Drucker'");return c[0]&&c[0].values.length===1}catch{return false}}},
+  {q:'Zähle die Anzahl Produkte pro Kategorie (Spalten: kategorie, anzahl).',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length===2},
+  {q:'Finde alle Produkte mit Lagerbestand = 0.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length===1},
+  {q:'Welche Kunden (firma) haben mehr als 1 Bestellung? Zeige firma und anzahl.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length>=1&&r.res[0].values.every(row=>row[1]>1)},
+  {q:'Erhöhe den Preis aller Software-Produkte um 10%.',
+   check:r=>{if(!r.ok)return false;try{const c=DB.exec("SELECT preis FROM produkt WHERE prod_id=4");return Math.abs(c[0].values[0][0]-108.9)<0.1}catch{return false}}},
+  {q:'Wie viele Bestellungen hat jeder Kunde? Zeige firma und anzahl (JOIN nötig).',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length>=4},
+  {q:'Finde alle Mitarbeiter, die mehr als das firmenweite Durchschnittsgehalt verdienen.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length===5},
+  {q:'Gib vorname, nachname und Anzahl Projekte pro Mitarbeiter aus. Nur Mitarbeiter mit Projekten, absteigend sortiert.',
+   check:r=>r.ok&&r.res[0]&&r.res[0].values.length>=5}
+];
+
+function renderExam(){
+  const c = document.getElementById('exam-container');
+  if(!STATE.exam){
+    c.innerHTML = `
+      <h3 style="font-size:18px;margin-bottom:8px">Bereit für die Simulation?</h3>
+      <p style="color:var(--ink-2);font-size:13px;margin-bottom:16px">10 gemischte SQL-Aufgaben im AP2-Stil. Keine Tipps, kein Zurück, keine Rücksicht. Am Ende gibt's eine Note.</p>
+      <button class="btn primary" id="exam-start">▶ Prüfung starten</button>`;
+    document.getElementById('exam-start').addEventListener('click',async()=>{
+      await initDB();
+      STATE.exam = {i:0, ok:0, start:Date.now(), results:[]};
+      renderExam();
+    });
+    return;
+  }
+  const e = STATE.exam;
+  if(e.i >= EXAM_QUESTIONS.length){
+    const mins = Math.round((Date.now()-e.start)/60000);
+    const quote = e.ok/EXAM_QUESTIONS.length;
+    let grade, color;
+    if(quote>=0.92){grade='SEHR GUT (1)';color='var(--green)'}
+    else if(quote>=0.81){grade='GUT (2)';color='var(--green)'}
+    else if(quote>=0.67){grade='BEFRIEDIGEND (3)';color='var(--yellow)'}
+    else if(quote>=0.50){grade='AUSREICHEND (4)';color='var(--yellow)'}
+    else if(quote>=0.30){grade='MANGELHAFT (5)';color='var(--red)'}
+    else{grade='UNGENÜGEND (6)';color='var(--red)'}
+    c.innerHTML = `
+      <h3 style="font-size:22px;margin-bottom:20px">Prüfung beendet</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+        <div class="stat" style="background:var(--bg-3);padding:16px;border-radius:8px">
+          <div class="val">${e.ok}/${EXAM_QUESTIONS.length}</div><div class="lbl">Richtig</div>
+        </div>
+        <div class="stat" style="background:var(--bg-3);padding:16px;border-radius:8px">
+          <div class="val">${Math.round(quote*100)}%</div><div class="lbl">Quote</div>
+        </div>
+        <div class="stat" style="background:var(--bg-3);padding:16px;border-radius:8px">
+          <div class="val">${mins}</div><div class="lbl">Minuten</div>
+        </div>
+      </div>
+      <div style="padding:20px;background:var(--bg-3);border-radius:8px;text-align:center;margin-bottom:20px">
+        <div style="font-size:11px;color:var(--ink-3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Ergebnis</div>
+        <div style="font-size:26px;font-weight:700;color:${color}">${grade}</div>
+      </div>
+      <button class="btn primary" id="exam-retry">↻ Nochmal versuchen</button>`;
+    document.getElementById('exam-retry').addEventListener('click',()=>{
+      STATE.exam = null;
+      renderExam();
+    });
+    return;
+  }
+  const q = EXAM_QUESTIONS[e.i];
+  const ticks = EXAM_QUESTIONS.map((_,i)=>{
+    if(i<e.i){
+      const rs = e.results[i];
+      return `<div class="tick ${rs?'done':'fail'}"></div>`;
+    }
+    if(i===e.i) return `<div class="tick cur"></div>`;
+    return `<div class="tick"></div>`;
+  }).join('');
+  c.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:11px;letter-spacing:1px;color:var(--ink-3);text-transform:uppercase">Aufgabe ${e.i+1} von ${EXAM_QUESTIONS.length}</div>
+      <div style="font-size:11px;color:var(--green)">Richtig: ${e.ok}</div>
+    </div>
+    <div class="exam-progress">${ticks}</div>
+    <div style="background:var(--bg-3);border-radius:8px;padding:16px;margin:16px 0;border-left:3px solid var(--blue)">
+      <strong style="font-size:14px">${q.q}</strong>
+    </div>
+    <textarea class="editor" id="exam-editor" spellcheck="false" placeholder="-- Dein SQL hier..." style="background:var(--bg-3);min-height:140px;border:1px solid var(--border);border-radius:8px"></textarea>
+    <div class="editor-actions" style="padding:12px 0 0">
+      <button class="btn primary" id="exam-submit">✓ Antwort abgeben</button>
+      <button class="btn ghost" id="exam-skip">→ Überspringen</button>
+    </div>
+    <div id="exam-result" style="margin-top:14px"></div>`;
+  document.getElementById('exam-submit').addEventListener('click',()=>{
+    const sql = document.getElementById('exam-editor').value;
+    const out = runSQL(sql);
+    const ok = q.check(out);
+    const box = document.getElementById('exam-result');
+    renderResultTable(box, out);
+    const v = document.createElement('div');
+    v.className = 'verdict '+(ok?'ok':'ko');
+    v.innerHTML = `<span class="big">${ok?'✓':'✗'}</span><div>${ok?'Korrekt':'Falsch — weiter zur nächsten Aufgabe'}</div>`;
+    box.appendChild(v);
+    e.results[e.i] = ok;
+    if(ok) e.ok++;
+    setTimeout(()=>{e.i++;renderExam()},1400);
+  });
+  document.getElementById('exam-skip').addEventListener('click',()=>{
+    e.results[e.i] = false;
+    e.i++;renderExam();
+  });
+}
+
+/* ============ TOAST ============ */
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className='toast';
+  t.innerHTML = `✓ ${msg}`;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+/* ============ INIT ============ */
+(async function init(){
+  try{
+    await initDB();
+    updateHeader();
+    renderHomeSuggestions();
+    renderMissionsList();
+    renderTutorials();
+    renderCheat();
+    renderSchemaPanel(document.getElementById('schema-body'), null);
+    renderSchemaPanel(document.getElementById('pg-schema'), (n)=>{
+      document.getElementById('pg-editor').value = `SELECT * FROM ${n} LIMIT 10;`;
+    });
+    renderExam();
+  }catch(e){
+    console.error(e);
+    document.body.innerHTML='<div style="padding:60px;text-align:center;color:var(--red);font-family:monospace">Fehler beim Laden: '+e.message+'</div>';
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Modul 6: WiSo Quiz</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #10b981; --text: #f1f5f9; --correct: #22c55e; --wrong: #ef4444; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; max-width: 800px; margin: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-right: 10px; margin-top: 15px; font-weight: bold; font-size: 1rem; transition: background 0.3s, transform 0.1s; }
+        .btn:hover { background: #059669; transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+        .question-box { background: #334155; padding: 25px; border-radius: 10px; margin: 20px 0; border-left: 5px solid var(--accent); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .options { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .option { background: #1e293b; border: 2px solid #475569; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 1.05rem; }
+        .option:hover { border-color: var(--accent); background: #283548; }
+        .option.selected { border-color: var(--accent); background: #283548; }
+        .option.correct { border-color: var(--correct); background: rgba(34, 197, 94, 0.15); }
+        .option.wrong { border-color: var(--wrong); background: rgba(239, 68, 68, 0.15); }
+        .explanation { background: #020617; border-left: 4px solid #f59e0b; padding: 20px; margin-top: 25px; border-radius: 0 8px 8px 0; display: none; font-size: 0.95rem; }
+        .situation { background: #1e293b; font-style: italic; border-left: 3px solid #94a3b8; padding: 10px 15px; margin-bottom: 15px; color: #cbd5e1; }
+        .header-nav { margin-bottom: 25px; }
+        .score-display { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #10b981; }
+        h1 { margin-top: 0; color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header-nav">
+            <button class="btn" onclick="window.location.href='../index.html'" style="background: #475569;">← Zurück zum Menü</button>
+        </div>
+        <h1>Modul 6: WiSo Quiz</h1>
+        <p>Dieses Quiz enthält über 50 Original-Prüfungsfragen (WiSo). Pro Durchlauf werden dir <strong>30 zufällige Fragen</strong> gestellt.</p>
+        
+        <div class="score-display">Frage <span id="current-q">1</span> von <span id="total-q">30</span> | Punkte: <span id="score">0</span></div>
+
+        <div id="quiz-container">
+            <div class="question-box">
+                <div id="situation-text" class="situation" style="display: none;"></div>
+                <h3 id="question-text">Lade Frage...</h3>
+                <div class="options" id="options-container">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+            
+            <div id="explanation-box" class="explanation">
+                <strong>Erklärung:</strong> <span id="explanation-text"></span>
+            </div>
+
+            <button id="next-btn" class="btn" style="display: none;" onclick="nextQuestion()">Nächste Frage</button>
+        </div>
+
+        <div id="result-container" style="display: none; text-align: center;">
+            <h2>Quiz Beendet!</h2>
+            <p>Du hast <span id="final-score">0</span> von <span id="final-total">30</span> Fragen richtig beantwortet.</p>
+            <button class="btn" onclick="restartQuiz()">Neues Quiz mit 30 neuen Fragen</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // 1-12: Bisherige
+            { situation: "Die Infotec GmbH bietet als IT-Dienstleister für kleine und mittelständische Betriebe kundenspezifische Hard- und Softwarelösungen an.", question: "Welche der folgenden Bezeichnungen trifft auf die Infotec GmbH zu?", options: ["Unternehmen des primären Sektors", "Unternehmen des sekundären Sektors", "Unternehmen des tertiären Sektors", "Gemeinwirtschaftlicher Betrieb"], correctIndex: 2, explanation: "IT-Dienstleister gehören zum tertiären Sektor (Dienstleistungssektor)." },
+            { question: "In Deutschland gibt es neben privaten Betrieben auch öffentlich-rechtliche Betriebe. Welches Ziel verfolgt ein öffentlich-rechtlicher Betrieb primär?", options: ["Die Steigerung des Einkommens der Kommune.", "Die strikte Vermeidung jeglicher Kosten.", "Die bestmögliche Versorgung der Bevölkerung mit Dienstleistungen oder Sachgütern.", "Die Gewinnmaximierung für private Investoren."], correctIndex: 2, explanation: "Öffentlich-rechtliche Betriebe arbeiten primär nach dem Kostendeckungsprinzip zur Versorgung der Bevölkerung." },
+            { situation: "Die Easter GmbH hat viele Kunden aus unterschiedlichen Wirtschaftssektoren.", question: "Welche der folgenden Unternehmen gehören zum primären Sektor?", options: ["Kieswerke GmbH & Viehzuchtbetrieb", "Stadtwerke & Energieversorgung", "Metallbau GmbH & Hochbau KG", "Steuerberater & IT-Systemhaus"], correctIndex: 0, explanation: "Der primäre Sektor ist die Urproduktion (Landwirtschaft, Bergbau)." },
+            { situation: "Der Mitarbeiterin Maus wird in der Nagel & Schelle GmbH die allgemeine Handlungsvollmacht übertragen.", question: "Wie muss Frau Maus die Geschäftspost unterschreiben?", options: ["ppa. Maus", "i.A. Maus (im Auftrag)", "i.V. Maus (in Vollmacht)", "Ohne jeden Zusatz"], correctIndex: 2, explanation: "Ein Handlungsbevollmächtigter unterschreibt mit 'i.V.'." },
+            { question: "Welche der folgenden Rechtshandlungen ist einem Prokuristen (Einzelprokura) gesetzlich verboten?", options: ["Mitarbeiter einstellen oder entlassen.", "Betriebsgrundstücke verkaufen oder belasten.", "Darlehen im Namen des Unternehmens aufnehmen.", "Andere Unternehmen im Namen der GmbH kaufen."], correctIndex: 1, explanation: "Ein Prokurist darf keine Grundstücke verkaufen oder belasten (§ 49 Abs. 2 HGB)." },
+            { situation: "Die EPP AG ist ein Hersteller elektronischer Bauteile.", question: "In welcher der folgenden Organisationen/Einrichtungen ist die EPP AG zwingend Mitglied?", options: ["Arbeitgeberverband", "Wertpapierbörse", "Industrie- und Handelskammer (IHK)", "Handwerkskammer (HWK)"], correctIndex: 2, explanation: "Industrieunternehmen, Händler und Dienstleister unterliegen der IHK-Pflichtmitgliedschaft." },
+            { question: "Wann wird eine Gesellschaft mit beschränkter Haftung (GmbH) rechtsfähig?", options: ["Mit der notariellen Beurkundung des Gesellschaftsvertrages.", "Mit der Einzahlung der Mindeststammeinlage.", "Mit der Anmeldung beim Gewerbeamt.", "Mit der Eintragung in das Handelsregister."], correctIndex: 3, explanation: "Die GmbH entsteht als juristische Person erst durch die konstitutive Eintragung ins Handelsregister." },
+            { question: "Was versteht man in der Wirtschaft unter einer 'Fusion'?", options: ["Eine lockere Zusammenarbeit.", "Den Zusammenschluss zu einer neuen wirtschaftlichen und rechtlichen Einheit.", "Die Auslagerung (Outsourcing).", "Die Gründung einer Tochtergesellschaft."], correctIndex: 1, explanation: "Bei einer Fusion verlieren die Unternehmen ihre rechtliche und wirtschaftliche Selbstständigkeit." },
+            { situation: "Die Giga IT GmbH hat der Fresh GmbH am 21.10. ein Kassensystem geliefert. Rechnung vom 24.10., Zahlungsziel 14.11.", question: "Wann verjährt der Anspruch der Giga IT GmbH auf Zahlung nach der regelmäßigen Verjährungsfrist?", options: ["Nach exakt 3 Jahren ab Lieferdatum.", "Nach exakt 3 Jahren ab Fälligkeit.", "Am Ende des dritten Jahres nach dem Jahr der Entstehung (31.12.).", "Nach zehn Jahren."], correctIndex: 2, explanation: "Die regelmäßige Frist (3 Jahre) beginnt mit dem Schluss des Jahres der Entstehung (§ 199 BGB)." },
+            { question: "Welche Abteilung eines Handelsregisters ist für Kapitalgesellschaften (GmbH, AG) zuständig?", options: ["Handelsregister Abteilung A (HRA)", "Handelsregister Abteilung B (HRB)", "Handelsregister Abteilung C (HRC)", "Genossenschaftsregister (GnR)"], correctIndex: 1, explanation: "Kapitalgesellschaften (GmbH, AG) werden in HRB eingetragen." },
+            { question: "Die Eigenkapitalrentabilität liegt bei 8%. Was sagt dieser Wert aus?", options: ["Der Gewinn beträgt 8% des Umsatzes.", "8% der Kosten werden durch EK gedeckt.", "Das eingesetzte Eigenkapital hat sich mit 8% verzinst.", "Das Unternehmen hat 8% mehr EK als FK."], correctIndex: 2, explanation: "Die Eigenkapitalrentabilität gibt die Verzinsung des eingesetzten Eigenkapitals an." },
+            { question: "Wer haftet bei einer Offenen Handelsgesellschaft (OHG) für die Schulden der Gesellschaft?", options: ["Nur die Gesellschaft.", "Nur der Geschäftsführer.", "Komplementär unbeschränkt, Kommanditisten beschränkt.", "Alle Gesellschafter unmittelbar, unbeschränkt und solidarisch."], correctIndex: 3, explanation: "OHG: Alle Gesellschafter haften unbeschränkt, unmittelbar und solidarisch." },
+
+            // Additional Extracted & Generated
+            { question: "Was versteht man unter einem 'Kartell'?", options: ["Zusammenschluss von Unternehmen, die rechtlich und wirtschaftlich selbstständig bleiben, aber den Wettbewerb beschränken.", "Eine komplette Verschmelzung zweier Unternehmen.", "Eine Tochtergesellschaft im Ausland.", "Ein gesetzlich vorgeschriebener Zusammenschluss."], correctIndex: 0, explanation: "Kartelle sind vertragliche Absprachen zwischen Unternehmen der gleichen Branche zur Wettbewerbsbeschränkung (z.B. Preisabsprachen). Die Unternehmen bleiben selbstständig." },
+            { question: "Welcher Kaufmann wird durch die konstitutive Eintragung ins Handelsregister zum Kaufmann?", options: ["Istkaufmann", "Kannkaufmann", "Formkaufmann", "Scheinkaufmann"], correctIndex: 1, explanation: "Ein Kannkaufmann (Kleingewerbetreibender) wird erst durch die freiwillige Eintragung ins Handelsregister zum Kaufmann (konstitutive Wirkung)." },
+            { question: "Welche der folgenden Unternehmensformen ist eine Personengesellschaft?", options: ["GmbH (Gesellschaft mit beschränkter Haftung)", "AG (Aktiengesellschaft)", "KG (Kommanditgesellschaft)", "eG (eingetragene Genossenschaft)"], correctIndex: 2, explanation: "Die KG (Kommanditgesellschaft) ist eine Personengesellschaft. GmbH, AG und eG sind juristische Personen." },
+            { question: "Was bedeutet das Prinzip der 'Solidarischen Haftung'?", options: ["Jeder haftet nur für seinen eigenen Anteil.", "Ein Gläubiger kann die gesamte Schuld von jedem beliebigen Gesellschafter fordern.", "Die Gesellschaft haftet nur bis zur Höhe des Stammkapitals.", "Die Haftung ist auf das Privatvermögen beschränkt."], correctIndex: 1, explanation: "Solidarische (gesamtschuldnerische) Haftung bedeutet, dass der Gläubiger sich aussuchen kann, von welchem Gesellschafter er die gesamte Schuld einfordert." },
+            { question: "Wer ist befugt, eine Prokura zu erteilen?", options: ["Jeder Mitarbeiter der Personalabteilung.", "Jeder Handlungsbevollmächtigte.", "Nur der Inhaber des Handelsgeschäfts oder sein gesetzlicher Vertreter.", "Ausschließlich das Amtsgericht."], correctIndex: 2, explanation: "Prokura darf nach HGB nur vom Inhaber (bzw. den gesetzlichen Vertretern bei Gesellschaften) ausdrücklich erteilt werden." },
+            { situation: "Ein Mitarbeiter hat eine Artvollmacht für den Einkauf von Büromaterial.", question: "Darf er auch neue Server für das Rechenzentrum kaufen?", options: ["Ja, wenn das Budget reicht.", "Ja, da er bevollmächtigt ist, Ware einzukaufen.", "Nein, da eine Artvollmacht nur für eine bestimmte Art von Geschäften gilt.", "Nein, weil nur ein Prokurist Hardware kaufen darf."], correctIndex: 2, explanation: "Eine Artvollmacht beschränkt sich auf bestimmte, immer wiederkehrende Geschäfte einer bestimmten Art (hier: Büromaterial)." },
+            { question: "Was ist das Mindeststammkapital zur Gründung einer GmbH?", options: ["1.000 Euro", "10.000 Euro", "25.000 Euro", "50.000 Euro"], correctIndex: 2, explanation: "Das Mindeststammkapital einer GmbH beträgt 25.000 Euro (§ 5 GmbHG)." },
+            { question: "Welches Organ der Aktiengesellschaft (AG) ist für die Geschäftsführung und Vertretung nach außen zuständig?", options: ["Der Aufsichtsrat", "Die Hauptversammlung", "Der Vorstand", "Der Betriebsrat"], correctIndex: 2, explanation: "Der Vorstand leitet die AG eigenverantwortlich. Der Aufsichtsrat überwacht den Vorstand, und die Hauptversammlung ist das Beschlussorgan der Aktionäre." },
+            { situation: "Ein Auszubildender fragt nach den Merkmalen eines 'Konzerns'.", question: "Was zeichnet einen Konzern aus?", options: ["Verlust der rechtlichen, aber Erhalt der wirtschaftlichen Selbstständigkeit.", "Erhalt der rechtlichen, aber Aufgabe der wirtschaftlichen Selbstständigkeit (unter einheitlicher Leitung).", "Komplette Aufgabe der rechtlichen und wirtschaftlichen Selbstständigkeit.", "Zusammenschluss von mindestens drei GmbHs."], correctIndex: 1, explanation: "In einem Konzern bleiben die Unternehmen rechtlich selbstständig, unterstehen aber wirtschaftlich einer einheitlichen Leitung (oft durch eine Muttergesellschaft)." },
+            { question: "Wer wählt den Aufsichtsrat in einer großen AG (ohne Mitbestimmungsgesetz)?", options: ["Der Vorstand", "Die Hauptversammlung", "Der Betriebsrat", "Das Handelsregister"], correctIndex: 1, explanation: "Die Hauptversammlung (die Aktionäre) wählt die Vertreter der Anteilseigner in den Aufsichtsrat." },
+            { question: "Was ist ein 'Formkaufmann'?", options: ["Ein Unternehmen, das kraft seiner Rechtsform immer Kaufmann ist (z.B. AG, GmbH).", "Ein Kaufmann, der Formulare druckt.", "Ein Kaufmann, der keine Eintragung im Handelsregister benötigt.", "Ein Land- und Forstwirt."], correctIndex: 0, explanation: "Kapitalgesellschaften sind Formkaufleute: Sie sind allein aufgrund ihrer Rechtsform (AG, GmbH, KGaA) Kaufleute im Sinne des HGB." },
+            { question: "Was bewirkt die Eintragung eines Istkaufmanns ins Handelsregister?", options: ["Sie ist konstitutiv (rechtserzeugend).", "Sie ist deklaratorisch (rechtsbezeugend).", "Sie befreit ihn von der Steuerpflicht.", "Sie schränkt seine Haftung ein."], correctIndex: 1, explanation: "Ein Istkaufmann ist bereits durch Art und Umfang seines Geschäfts Kaufmann. Die Eintragung hat nur bestätigende (deklaratorische) Wirkung." },
+            { question: "Was beinhaltet der Begriff 'Firma' im rechtlichen Sinne?", options: ["Das Firmengebäude.", "Die Produkte des Unternehmens.", "Den Namen, unter dem der Kaufmann seine Geschäfte betreibt und unterschreibt.", "Die Anzahl der Mitarbeiter."], correctIndex: 2, explanation: "Nach § 17 HGB ist die Firma eines Kaufmanns der Name, unter dem er seine Geschäfte betreibt und die Unterschrift abgibt." },
+            { question: "Welche der folgenden Gesellschaften zahlt Körperschaftsteuer?", options: ["Einzelunternehmen", "OHG", "KG", "GmbH"], correctIndex: 3, explanation: "Die Körperschaftsteuer fällt nur bei juristischen Personen (Kapitalgesellschaften wie GmbH, AG) an. Bei Personengesellschaften zahlen die Gesellschafter Einkommensteuer." },
+            { question: "Ein Betrieb gehört zum sekundären Wirtschaftssektor. Welcher könnte es sein?", options: ["Ein Bauernhof", "Ein Software-Entwickler", "Eine Automobilfabrik", "Eine Bank"], correctIndex: 2, explanation: "Der sekundäre Sektor (produzierendes Gewerbe/Industrie) verarbeitet die Rohstoffe des primären Sektors. Eine Fabrik ist ein klassisches Beispiel." },
+            { question: "Was kennzeichnet ein Franchise-System (z.B. McDonald's)?", options: ["Der Franchisegeber stellt das Konzept, der Franchisenehmer handelt im eigenen Namen und auf eigene Rechnung.", "Der Franchisegeber kauft das Geschäft des Franchisenehmers komplett auf.", "Es handelt sich um einen staatlichen Monopolbetrieb.", "Die Unternehmen fusionieren zu einer AG."], correctIndex: 0, explanation: "Beim Franchising nutzt der rechtlich selbstständige Franchisenehmer gegen Gebühr das etablierte Geschäftskonzept, die Marke und das Know-how des Franchisegebers." },
+            { question: "Was ist die Hauptaufgabe des Bundeskartellamtes?", options: ["Preise für Lebensmittel staatlich festzulegen.", "Den fairen Wettbewerb zu schützen und Monopole sowie unerlaubte Kartelle zu verhindern.", "Tarifverträge auszuhandeln.", "Neue Unternehmen ins Handelsregister einzutragen."], correctIndex: 1, explanation: "Das Bundeskartellamt ist die unabhängige Wettbewerbsbehörde. Ihr Ziel ist der Schutz des Wettbewerbs." },
+            { question: "Welche der folgenden Angaben muss ZWINGEND auf Geschäftsbriefen einer GmbH stehen?", options: ["Das Geburtsdatum des Geschäftsführers.", "Das Stammkapital, auch wenn es noch nicht voll eingezahlt ist.", "Sitz der Gesellschaft, Registergericht und Handelsregisternummer.", "Die Privatadresse der Gesellschafter."], correctIndex: 2, explanation: "Rechtsform, Sitz, Registergericht, HRB-Nummer und alle Geschäftsführer müssen auf Geschäftsbriefen zwingend angegeben werden." },
+            { question: "Was versteht man unter einem 'Joint Venture'?", options: ["Eine verbotene Preisabsprache.", "Die Gründung eines gemeinsamen Tochterunternehmens durch mindestens zwei voneinander unabhängige Unternehmen.", "Die Übernahme eines kleinen Unternehmens durch einen Konzern.", "Eine stille Gesellschaft ohne Haftung."], correctIndex: 1, explanation: "Bei einem Joint Venture (Gemeinschaftsunternehmen) gründen und leiten zwei Partnerunternehmen gemeinsam ein drittes Unternehmen, um Synergien zu nutzen." },
+            { question: "Was ist ein wesentlicher Unterschied zwischen einer Kommanditgesellschaft (KG) und einer OHG?", options: ["Die KG ist eine Kapitalgesellschaft, die OHG eine Personengesellschaft.", "In der KG haften manche Gesellschafter (Kommanditisten) nur bis zu ihrer Einlage, in der OHG haften alle unbeschränkt.", "Die OHG hat ein Mindestkapital, die KG nicht.", "Die KG wird nicht ins Handelsregister eingetragen."], correctIndex: 1, explanation: "Die KG besteht aus einem voll haftenden Komplementär und mindestens einem teilhaftenden Kommanditisten. In der OHG haften alle voll." },
+            { question: "Darf eine Firma veräußert werden?", options: ["Nein, Firmen dürfen generell nicht verkauft werden.", "Ja, aber nur zusammen mit dem dazugehörigen Handelsgeschäft.", "Ja, die Firma kann unabhängig vom Unternehmen an Dritte verkauft werden.", "Nur bei Aktiengesellschaften."], correctIndex: 1, explanation: "Gemäß § 23 HGB kann die Firma (der Name) nicht isoliert, sondern nur zusammen mit dem Unternehmen (dem Handelsgeschäft) veräußert werden." },
+            { question: "Welcher Zusatz zeigt im Rechtsverkehr, dass es sich um eine Aktiengesellschaft handelt?", options: ["GmbH & Co. KG", "e.K.", "AG", "GbR"], correctIndex: 2, explanation: "AG steht für Aktiengesellschaft. Es ist gesetzlich vorgeschrieben, den Rechtsformzusatz im Namen zu führen." },
+            { question: "Wer vertritt die GmbH gerichtlich und außergerichtlich?", options: ["Der Gesellschafterausschuss", "Der Aufsichtsrat", "Der Geschäftsführer", "Der Vorstand"], correctIndex: 2, explanation: "Das Vertretungsorgan einer Gesellschaft mit beschränkter Haftung (GmbH) ist der Geschäftsführer." },
+            { question: "Ein Betrieb ist vorrangig im tertiären Sektor tätig. Welcher ist das?", options: ["Ein Bergbaubetrieb", "Ein Möbelhersteller", "Ein Versicherungsunternehmen", "Ein landwirtschaftlicher Hof"], correctIndex: 2, explanation: "Versicherungen bieten Dienstleistungen an und gehören somit zum tertiären Sektor." },
+            { question: "Ab welchem Zeitpunkt beginnt die Rechtsfähigkeit einer natürlichen Person?", options: ["Mit der Zeugung.", "Mit der Vollendung der Geburt.", "Mit Vollendung des 7. Lebensjahres.", "Mit Vollendung des 18. Lebensjahres."], correctIndex: 1, explanation: "Die Rechtsfähigkeit (Träger von Rechten und Pflichten zu sein) einer natürlichen Person beginnt mit der Vollendung der Geburt (§ 1 BGB)." },
+            { question: "Wer ist nach dem BGB 'beschränkt geschäftsfähig'?", options: ["Personen zwischen 0 und 6 Jahren.", "Personen vom vollendeten 7. bis zum vollendeten 18. Lebensjahr.", "Nur geistig behinderte Personen.", "Auszubildende unter 21 Jahren."], correctIndex: 1, explanation: "Minderjährige, die das siebente Lebensjahr vollendet haben, sind nach § 106 BGB beschränkt geschäftsfähig." },
+            { question: "Ein 16-jähriger kauft sich von seinem Taschengeld eine CD. Ist der Kaufvertrag gültig?", options: ["Nein, er ist erst ab 18 geschäftsfähig.", "Nein, die Eltern müssen immer schriftlich zustimmen.", "Ja, durch den sogenannten Taschengeldparagrafen (§ 110 BGB).", "Nur, wenn der Verkäufer vorher die Eltern anruft."], correctIndex: 2, explanation: "Wenn der Minderjährige die vertragsmäßige Leistung mit Mitteln bewirkt, die ihm zu diesem Zweck oder zur freien Verfügung überlassen wurden (Taschengeld), ist der Vertrag wirksam." },
+            { question: "Welche Formvorschrift gilt für einen Berufsausbildungsvertrag?", options: ["Er kann mündlich abgeschlossen werden.", "Er bedarf der notariellen Beurkundung.", "Er muss zwingend vor Beginn der Ausbildung schriftlich niedergelegt werden.", "Es gibt keine Formvorschriften."], correctIndex: 2, explanation: "Nach dem Berufsbildungsgesetz (BBiG) muss der Ausbildungsvertrag vor Ausbildungsbeginn schriftlich geschlossen werden." },
+            { question: "Wie lange darf die vertraglich vereinbarte Probezeit in einem Berufsausbildungsverhältnis maximal dauern?", options: ["1 Monat", "3 Monate", "4 Monate", "6 Monate"], correctIndex: 2, explanation: "Laut § 20 BBiG muss die Probezeit mindestens einen Monat und darf höchstens vier Monate betragen." },
+            { question: "Wer trägt die Kosten für die IHK-Abschlussprüfung eines Auszubildenden?", options: ["Der Auszubildende", "Die Berufsschule", "Der Ausbildungsbetrieb", "Der Staat"], correctIndex: 2, explanation: "Die Kosten der Prüfung, einschließlich der Freistellung für diesen Tag, trägt der Ausbildungsbetrieb." },
+            { question: "Ein Auszubildender wird nach seiner bestandenen Abschlussprüfung einfach weiterbeschäftigt, ohne dass darüber gesprochen wurde. Was passiert rechtlich?", options: ["Das Ausbildungsverhältnis verlängert sich um ein Jahr.", "Es entsteht ein unbefristetes Arbeitsverhältnis.", "Er macht sich strafbar.", "Der Betrieb muss ein Bußgeld zahlen."], correctIndex: 1, explanation: "Wird ein Auszubildender im Anschluss an das Berufsausbildungsverhältnis stillschweigend weiterbeschäftigt, gilt ein Arbeitsverhältnis auf unbestimmte Zeit als begründet (§ 24 BBiG)." },
+            { question: "Welches Gericht ist sachlich für Streitigkeiten aus dem Ausbildungsverhältnis in erster Instanz zuständig?", options: ["Das Amtsgericht", "Das Landgericht", "Das Arbeitsgericht", "Das Sozialgericht"], correctIndex: 2, explanation: "Für Rechtsstreitigkeiten zwischen Auszubildenden und Ausbildenden sind (nach einem eventuellen Schlichtungsausschussverfahren) die Arbeitsgerichte zuständig." },
+            { question: "Was regelt das Jugendarbeitsschutzgesetz (JArbSchG) bezüglich der Arbeitszeit für Jugendliche?", options: ["Maximal 8 Stunden täglich und 40 Stunden wöchentlich.", "Maximal 10 Stunden täglich.", "Es gibt keine Obergrenze.", "Maximal 6 Stunden täglich an 6 Tagen die Woche."], correctIndex: 0, explanation: "Nach § 8 JArbSchG dürfen Jugendliche (unter 18) grundsätzlich nicht mehr als acht Stunden täglich und nicht mehr als 40 Stunden wöchentlich beschäftigt werden." },
+            { question: "Ein Tarifvertrag wird abgeschlossen zwischen...", options: ["Arbeitnehmern und dem Betriebsrat.", "Gewerkschaften und Arbeitgeberverbänden (bzw. einzelnen Arbeitgebern).", "Der IHK und der Berufsschule.", "Dem Bundesministerium und der Gewerkschaft."], correctIndex: 1, explanation: "Tarifvertragsparteien sind auf der einen Seite die Gewerkschaften, auf der anderen Seite die Arbeitgeberverbände (Flächentarifvertrag) oder ein einzelner Arbeitgeber (Haustarifvertrag)." },
+            { question: "Was bedeutet die sogenannte 'Friedenspflicht' im Tarifrecht?", options: ["Arbeitnehmer dürfen nicht kündigen.", "Während der Laufzeit eines Tarifvertrages darf für die darin geregelten Dinge nicht gestreikt werden.", "Der Betriebsrat darf dem Arbeitgeber nicht widersprechen.", "Ausländische Staaten dürfen nicht boykottiert werden."], correctIndex: 1, explanation: "Die Friedenspflicht verbietet Arbeitskampfmaßnahmen (Streik oder Aussperrung), solange der entsprechende Tarifvertrag noch gültig ist." },
+            { question: "Was ist ein 'Manteltarifvertrag' (oder Rahmentarifvertrag)?", options: ["Er regelt ausschließlich die Löhne und Gehälter.", "Er regelt allgemeine Arbeitsbedingungen wie Urlaub, Arbeitszeit und Kündigungsfristen.", "Er wird vom Staat diktiert.", "Er gilt nur für Führungskräfte."], correctIndex: 1, explanation: "Manteltarifverträge haben meist eine lange Laufzeit und regeln die allgemeinen Arbeitsbedingungen. Lohn- und Gehaltstarifverträge regeln die konkrete Vergütung." },
+            { question: "Welche ist die oberste Instanz der Arbeitsgerichtsbarkeit in Deutschland?", options: ["Das Bundesverfassungsgericht", "Der Bundesgerichtshof", "Das Bundesarbeitsgericht", "Das Bundessozialgericht"], correctIndex: 2, explanation: "Die Arbeitsgerichtsbarkeit ist dreistufig aufgebaut: Arbeitsgericht, Landesarbeitsgericht, Bundesarbeitsgericht (BAG) in Erfurt." },
+            { question: "Wie groß ist der gesetzliche Mindesturlaub nach dem Bundesurlaubsgesetz bei einer 5-Tage-Woche?", options: ["20 Arbeitstage", "24 Werktage", "30 Arbeitstage", "15 Werktage"], correctIndex: 0, explanation: "Das Gesetz schreibt 24 Werktage (Montag bis Samstag) vor. Bei einer 5-Tage-Woche (Montag bis Freitag) entspricht dies 20 Arbeitstagen (4 Wochen)." },
+            { question: "Welche Säule gehört NICHT zur gesetzlichen Sozialversicherung in Deutschland?", options: ["Krankenversicherung", "Arbeitslosenversicherung", "Pflegeversicherung", "Private Haftpflichtversicherung"], correctIndex: 3, explanation: "Die 5 Säulen der Sozialversicherung sind: Kranken-, Pflege-, Renten-, Arbeitslosen- und Unfallversicherung. Haftpflicht ist privat." },
+            { question: "Wer zahlt die Beiträge zur gesetzlichen Unfallversicherung?", options: ["Arbeitgeber und Arbeitnehmer je zur Hälfte.", "Ausschließlich der Arbeitnehmer.", "Ausschließlich der Arbeitgeber.", "Der Staat aus Steuermitteln."], correctIndex: 2, explanation: "Im Gegensatz zu den anderen Sozialversicherungen (die paritätisch geteilt werden), trägt die Kosten der gesetzlichen Unfallversicherung (Berufsgenossenschaften) der Arbeitgeber allein." },
+            { question: "Was ist das Prinzip der 'Umlagefinanzierung' in der gesetzlichen Rentenversicherung (Generationenvertrag)?", options: ["Jeder spart sein eigenes Kapital für das Alter an.", "Die aktuellen Beitragszahler finanzieren die Renten der aktuellen Rentner.", "Die Beiträge werden an der Börse investiert.", "Der Arbeitgeber legt das Geld auf einem Sperrkonto an."], correctIndex: 1, explanation: "Beim Umlageverfahren (Generationenvertrag) werden die eingenommenen Beiträge unmittelbar zur Zahlung der Renten an die aktuelle Rentnergeneration verwendet." },
+            { question: "Wann greift das Mutterschutzgesetz (MuSchG) mit dem absoluten Beschäftigungsverbot nach der Entbindung?", options: ["4 Wochen", "6 Wochen", "8 Wochen", "12 Wochen"], correctIndex: 2, explanation: "Mütter dürfen in den ersten 8 Wochen nach der Entbindung (bei Früh-/Mehrlingsgeburten 12 Wochen) nicht beschäftigt werden." },
+            { question: "Welche Steuer gehört zu den direkten Steuern?", options: ["Umsatzsteuer (Mehrwertsteuer)", "Mineralölsteuer", "Lohnsteuer (Einkommensteuer)", "Tabaksteuer"], correctIndex: 2, explanation: "Bei direkten Steuern (z.B. Lohnsteuer) sind Steuerschuldner und Steuerträger identisch. Bei indirekten Steuern (Umsatzsteuer) zahlt sie der Konsument, das Unternehmen führt sie aber ab." },
+            { question: "Was versteht man unter Inflation?", options: ["Eine Erhöhung der Kaufkraft des Geldes.", "Ein anhaltender Anstieg des allgemeinen Preisniveaus, wodurch das Geld an Wert verliert.", "Ein Rückgang der Preise.", "Die Erhöhung der Arbeitslosenquote."], correctIndex: 1, explanation: "Inflation bedeutet, dass für das gleiche Geld weniger Güter gekauft werden können (Geldentwertung / Kaufkraftverlust)." },
+            { question: "Wer ist in Deutschland für die Geldpolitik und die Sicherung der Preisstabilität zuständig?", options: ["Die Bundesregierung", "Das Bundeskartellamt", "Die Europäische Zentralbank (EZB) zusammen mit der Deutschen Bundesbank", "Die Industrie- und Handelskammer"], correctIndex: 2, explanation: "Das Europäische System der Zentralbanken (EZB und die nationalen Notenbanken wie die Bundesbank) steuert die Geldpolitik im Euroraum." },
+            { question: "Was misst das Bruttoinlandsprodukt (BIP)?", options: ["Den Gewinn aller Unternehmen eines Landes.", "Den Gesamtwert aller Güter und Dienstleistungen, die in einem Jahr innerhalb der Landesgrenzen erwirtschaftet werden.", "Das gesamte Vermögen der Privathaushalte.", "Die Höhe der Steuereinnahmen des Staates."], correctIndex: 1, explanation: "Das BIP ist das wichtigste Maß für die wirtschaftliche Leistung eines Landes. Es umfasst alles, was als Endprodukt im Inland hergestellt wird." },
+            { type: "open", situation: "Frau Müller ist seit 6 Jahren in der Ecotec GmbH angestellt. Das Unternehmen muss ihr aus betriebsbedingten Gründen kündigen.", question: "Welche gesetzliche Kündigungsfrist muss der Arbeitgeber nach § 622 BGB mindestens einhalten?", explanation: "Bei einer Betriebszugehörigkeit von 5 Jahren (aber noch unter 8 Jahren) beträgt die Kündigungsfrist für den Arbeitgeber 2 Monate zum Ende eines Kalendermonats." },
+            { type: "open", question: "Erklären Sie den Unterschied zwischen dem Stammkapital und der Stammeinlage bei einer GmbH.", explanation: "Das Stammkapital ist das gesamte festgesetzte Kapital der GmbH (mindestens 25.000 Euro). Die Stammeinlage ist der prozentuale/finanzielle Anteil, den ein einzelner Gesellschafter zu diesem Stammkapital beisteuert (z.B. Gesellschafter A übernimmt 10.000 Euro, Gesellschafter B übernimmt 15.000 Euro)." },
+            { type: "open", situation: "Der Auszubildende Kevin wird beim Diebstahl von Firmeneigentum (Laptop) erwischt. Der Chef kündigt ihm fristlos.", question: "Ist diese fristlose Kündigung rechtmäßig, auch wenn Kevin in der Ausbildung ist? Begründen Sie.", explanation: "Ja, nach § 22 BBiG kann ein Ausbildungsverhältnis nach der Probezeit nur aus einem wichtigen Grund ohne Einhalten einer Kündigungsfrist gekündigt werden (außerordentliche Kündigung). Diebstahl von Firmeneigentum ist ein solcher wichtiger Grund." }
+        ];
+
+        let selectedQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        const situationText = document.getElementById('situation-text');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        const currentQSpan = document.getElementById('current-q');
+        const scoreSpan = document.getElementById('score');
+
+        function initQuiz() {
+            // Fragen mischen und genau 30 auswählen
+            let shuffled = [...questions].sort(() => 0.5 - Math.random());
+            selectedQuestions = shuffled.slice(0, 30);
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreSpan.textContent = score;
+            
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            explanationBox.style.display = 'none';
+            nextBtn.style.display = 'none';
+            currentQSpan.textContent = currentQuestionIndex + 1;
+            
+            const q = selectedQuestions[currentQuestionIndex];
+            
+            if (q.situation) {
+                situationText.textContent = "Situation: " + q.situation;
+                situationText.style.display = 'block';
+            } else {
+                situationText.style.display = 'none';
+            }
+
+            questionText.textContent = q.question;
+            optionsContainer.innerHTML = '';
+
+            if (q.type === "open") {
+                const openDiv = document.createElement('div');
+                openDiv.innerHTML = `
+                    <p style="margin-bottom: 15px; color: #cbd5e1;">Dies ist eine offene Frage. Überlege dir die Antwort oder notiere sie kurz und klicke dann auf "Lösung anzeigen".</p>
+                    <textarea id="open-answer" placeholder="Deine Antwort (optional)..." style="width: 100%; height: 100px; padding: 15px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid #475569; margin-bottom: 15px; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+                    <button class="btn" style="background: #f59e0b; width: 100%; margin: 0;" onclick="showOpenAnswer()">Lösung anzeigen</button>
+                `;
+                optionsContainer.appendChild(openDiv);
+            } else {
+                // Auch die Antworten mischen
+                let optionsWithIndices = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                optionsWithIndices.sort(() => 0.5 - Math.random());
+
+                optionsWithIndices.forEach((optData) => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'option';
+                    optDiv.textContent = optData.text;
+                    // Speichere den originalen Index am Element
+                    optDiv.dataset.index = optData.originalIndex;
+                    optDiv.onclick = () => selectOption(parseInt(optDiv.dataset.index), optDiv);
+                    optionsContainer.appendChild(optDiv);
+                });
+            }
+        }
+
+        window.showOpenAnswer = function() {
+            if (answered) return;
+            const q = selectedQuestions[currentQuestionIndex];
+            
+            explanationText.textContent = q.explanation;
+            explanationBox.style.display = 'block';
+            
+            optionsContainer.innerHTML = `
+                <p style="margin-top: 15px; font-weight: bold; color: white;">Hattest du die Antwort im Kern richtig?</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" style="background: #22c55e; flex: 1; margin: 0;" onclick="gradeOpen(true)">✅ Richtig gewusst (+1)</button>
+                    <button class="btn" style="background: #ef4444; flex: 1; margin: 0;" onclick="gradeOpen(false)">❌ Falsch gelegen (0)</button>
+                </div>
+            `;
+        }
+
+        window.gradeOpen = function(isCorrect) {
+            if (answered) return;
+            answered = true;
+            
+            if (isCorrect) {
+                score++;
+                scoreSpan.textContent = score;
+            }
+
+            if (currentQuestionIndex < selectedQuestions.length - 1) {
+                nextBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.textContent = "Ergebnis anzeigen";
+                nextBtn.onclick = showResult;
+                nextBtn.style.display = 'inline-block';
+            }
+        }
+
+        function selectOption(originalSelectedIndex, optElement) {
+            if (answered) return;
+            answered = true;
+
+            const q = selectedQuestions[currentQuestionIndex];
+            const allOptions = optionsContainer.children;
+
+            if (originalSelectedIndex === q.correctIndex) {
+                optElement.classList.add('correct');
+                score++;
+                scoreSpan.textContent = score;
+            } else {
+                optElement.classList.add('wrong');
+                // Zeige dem User die richtige Antwort an
+                for (let i = 0; i < allOptions.length; i++) {
+                    if (parseInt(allOptions[i].dataset.index) === q.correctIndex) {
+                        allOptions[i].classList.add('correct');
+                    }
+                }
+            }
+
+            explanationText.textContent = q.explanation;
+            explanationBox.style.display = 'block';
+
+            if (currentQuestionIndex < selectedQuestions.length - 1) {
+                nextBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.textContent = "Ergebnis anzeigen";
+                nextBtn.onclick = showResult;
+                nextBtn.style.display = 'inline-block';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>IHK Trainer - Header Detektiv</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f1f5f9; --success: #4ade80; --error: #f87171; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .layout { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
+        .task-panel { flex: 1; min-width: 500px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
+        
+        /* HIER IST DAS REPARIERTE DESIGN FÜR DEN HEX-DUMP */
+        .hex-dump { 
+            font-family: 'Courier New', Courier, monospace; /* Echte Monospace-Schrift */
+            font-size: 1.1rem; 
+            background: #000; 
+            color: #4ade80; 
+            padding: 20px; 
+            border-radius: 8px; 
+            letter-spacing: 2px; 
+            line-height: 1.8; 
+            white-space: pre; /* Verhindert hässliche Zeilenumbrüche */
+            overflow-x: auto; /* Fügt einen Scrollbalken hinzu, falls das Fenster zu schmal ist */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+        
+        .reference-panel { flex: 1; min-width: 400px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
+        h1, h2 { color: var(--accent); margin-top: 0; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .btn:hover { background: #2563eb; }
+        .input-group { margin: 15px 0; display: flex; flex-direction: column; gap: 5px; }
+        input { padding: 10px; border-radius: 5px; border: 1px solid #475569; background: #334155; color: white; font-family: monospace; font-size: 1.1rem; }
+        .feedback { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #0f172a; font-size: 0.9rem; }
+        th, td { border: 1px solid #475569; padding: 8px; text-align: center; }
+        th { background: #334155; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <button class="btn" style="background:#64748b; margin-bottom: 20px;" onclick="window.location.href='../index.html'">← Zurück zum Menü</button>
+
+    <div class="layout">
+        <div class="task-panel">
+            <h1>Aufgabe: Trace Analyse</h1>
+            <p>Mit einem Analyseprogramm wurde folgender Netzwerkverkehr aufgezeichnet:</p>
+            
+            <div id="hex-dump" class="hex-dump">Lade Trace...</div>
+
+            <div style="margin-top: 20px;">
+                <div class="input-group">
+                    <label><b>1. Protokollversion (z.B. IPv4 oder IPv6)</b></label>
+                    <input type="text" id="ans-version" placeholder="IPv4">
+                </div>
+                <div class="input-group">
+                    <label><b>2. Senderadresse (Dezimal für v4, Hex für v6)</b></label>
+                    <input type="text" id="ans-src" placeholder="z.B. 2001:db8::48">
+                </div>
+                <div class="input-group">
+                    <label><b>3. Empfängeradresse (Dezimal für v4, Hex für v6)</b></label>
+                    <input type="text" id="ans-dst" placeholder="z.B. 2a02:2e0::d2">
+                </div>
+                <div class="input-group">
+                    <label><b>4. Eingebettetes Protokoll / Next Header</b></label>
+                    <input type="text" id="ans-proto" placeholder="TCP">
+                </div>
+                
+                <button class="btn" onclick="checkAnswers()">Antworten prüfen</button>
+                <button class="btn" style="background: #64748b;" onclick="generateTask()">Neuen Trace würfeln</button>
+                
+                <div id="feedback" class="feedback"></div>
+            </div>
+        </div>
+
+        <div class="reference-panel">
+            <h2>Spickzettel (IHK Referenz)</h2>
+            <h3>IPv4 Header (20 Bytes)</h3>
+            <table>
+                <tr><th colspan="1">Byte 0</th><th colspan="1">Byte 1</th><th colspan="2">Byte 2-3</th></tr>
+                <tr><td>Ver / IHL</td><td>TOS</td><td colspan="2">Gesamtlänge</td></tr>
+                <tr><th colspan="2">Byte 4-5</th><th colspan="2">Byte 6-7</th></tr>
+                <tr><td colspan="2">Ident</td><td colspan="2">Flags / Offset</td></tr>
+                <tr><th colspan="1">Byte 8</th><th colspan="1">Byte 9</th><th colspan="2">Byte 10-11</th></tr>
+                <tr><td>TTL</td><td><b>Protocol</b></td><td colspan="2">Checksum</td></tr>
+                <tr><th colspan="4">Byte 12 - 15</th></tr>
+                <tr><td colspan="4"><b>Source Address (32 Bit)</b></td></tr>
+                <tr><th colspan="4">Byte 16 - 19</th></tr>
+                <tr><td colspan="4"><b>Destination Address (32 Bit)</b></td></tr>
+            </table>
+
+            <h3>IPv6 Header (40 Bytes)</h3>
+            <table>
+                <tr><th colspan="4">Byte 0 - 3</th></tr>
+                <tr><td colspan="4">Version (4b) | Traffic Class (8b) | Flow Label (20b)</td></tr>
+                <tr><th colspan="2">Byte 4 - 5</th><th colspan="1">Byte 6</th><th colspan="1">Byte 7</th></tr>
+                <tr><td colspan="2">Payload Length</td><td><b>Next Header</b></td><td>Hop Limit</td></tr>
+                <tr><th colspan="4">Byte 8 - 23 (16 Bytes)</th></tr>
+                <tr><td colspan="4"><b>Source Address (128 Bit)</b></td></tr>
+                <tr><th colspan="4">Byte 24 - 39 (16 Bytes)</th></tr>
+                <tr><td colspan="4"><b>Destination Address (128 Bit)</b></td></tr>
+            </table>
+
+            <h3>Wichtige Protokoll-IDs (Hex)</h3>
+            <ul>
+                <li><b>01</b> = ICMP</li>
+                <li><b>06</b> = TCP</li>
+                <li><b>11</b> = UDP (Dezimal 17)</li>
+                <li><b>3A</b> = ICMPv6 (Dezimal 58)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentPacket = {};
+
+        const toHex = (n) => n.toString(16).padStart(2, '0').toUpperCase();
+        const randByte = () => Math.floor(Math.random() * 256);
+
+        function normalizeIP(ip) {
+            let s = ip.toLowerCase().trim();
+            if (s.includes(':')) {
+                if (s.includes('::')) {
+                    let parts = s.split('::');
+                    let left = parts[0] ? parts[0].split(':') : [];
+                    let right = parts[1] ? parts[1].split(':') : [];
+                    let missing = 8 - (left.length + right.length);
+                    let middle = Array(missing).fill('0');
+                    s = [...left, ...middle, ...right].join(':');
+                }
+                return s.split(':').map(b => b.replace(/^0+/, '') || '0').join(':');
+            }
+            return s; 
+        }
+
+        function generateTask() {
+            const isIPv4 = Math.random() > 0.5; 
+            let hexArray = [];
+            
+            if (isIPv4) {
+                const src = [192, 168, randByte(), randByte()];
+                const dst = [10, 0, randByte(), randByte()];
+                const protocols = [{hex: '06', name: 'TCP'}, {hex: '11', name: 'UDP'}, {hex: '01', name: 'ICMP'}];
+                const proto = protocols[Math.floor(Math.random() * protocols.length)];
+
+                hexArray = [
+                    '45', '00', '00', '3C', 
+                    toHex(randByte()), toHex(randByte()), '40', '00', 
+                    '40', proto.hex, toHex(randByte()), toHex(randByte()), 
+                    toHex(src[0]), toHex(src[1]), toHex(src[2]), toHex(src[3]), 
+                    toHex(dst[0]), toHex(dst[1]), toHex(dst[2]), toHex(dst[3]), 
+                    toHex(randByte()), toHex(randByte()), toHex(randByte()), toHex(randByte()) 
+                ];
+
+                currentPacket = {
+                    version: "IPv4",
+                    src: src.join('.'),
+                    dst: dst.join('.'),
+                    proto: proto.name
+                };
+
+            } else {
+                const srcHex = ['20', '01', '0D', 'B8', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', toHex(randByte())];
+                const dstHex = ['2A', '02', '02', 'E0', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', '00', toHex(randByte())];
+                const protocols = [{hex: '06', name: 'TCP'}, {hex: '11', name: 'UDP'}, {hex: '3A', name: 'ICMPv6'}];
+                const proto = protocols[Math.floor(Math.random() * protocols.length)];
+
+                hexArray = [
+                    '60', '00', '00', '00', 
+                    '00', '40', proto.hex, '40', 
+                    ...srcHex, 
+                    ...dstHex, 
+                    toHex(randByte()), toHex(randByte()) 
+                ];
+
+                const srcFull = srcHex.join('').match(/.{1,4}/g).join(':');
+                const dstFull = dstHex.join('').match(/.{1,4}/g).join(':');
+
+                currentPacket = {
+                    version: "IPv6",
+                    src: srcFull,
+                    dst: dstFull,
+                    proto: proto.name
+                };
+            }
+
+            // REPARIERTER JAVASCRIPT-CODE FÜR DEN ZEILENUMBRUCH
+            let dumpText = "";
+            for (let i = 0; i < hexArray.length; i++) {
+                dumpText += hexArray[i] + " ";
+                if ((i + 1) % 16 === 0) dumpText += "\n"; // Benutzt jetzt "echte" Zeilenumbrüche
+            }
+            document.getElementById("hex-dump").innerText = dumpText;
+
+            document.getElementById("ans-version").value = "";
+            document.getElementById("ans-src").value = "";
+            document.getElementById("ans-dst").value = "";
+            document.getElementById("ans-proto").value = "";
+            document.getElementById("feedback").style.display = "none";
+        }
+
+        function checkAnswers() {
+            const v = document.getElementById("ans-version").value.trim().toLowerCase();
+            const s = document.getElementById("ans-src").value.trim();
+            const d = document.getElementById("ans-dst").value.trim();
+            const p = document.getElementById("ans-proto").value.trim().toLowerCase();
+
+            let errors = [];
+
+            if (v !== currentPacket.version.toLowerCase()) errors.push(`Version ist falsch.`);
+            
+            if (normalizeIP(s) !== normalizeIP(currentPacket.src)) {
+                let shortSrc = currentPacket.src.replace(/(^|:)0+(?=[1-9a-fA-F])/g, '$1').replace(/(^|:)0(:0)+/g, '::');
+                errors.push(`Senderadresse stimmt nicht. Erwartet: ${shortSrc}`);
+            }
+            if (normalizeIP(d) !== normalizeIP(currentPacket.dst)) {
+                let shortDst = currentPacket.dst.replace(/(^|:)0+(?=[1-9a-fA-F])/g, '$1').replace(/(^|:)0(:0)+/g, '::');
+                errors.push(`Empfängeradresse stimmt nicht. Erwartet: ${shortDst}`);
+            }
+            
+            if (p !== currentPacket.proto.toLowerCase()) errors.push(`Protokoll ist falsch. Richtig wäre ${currentPacket.proto}.`);
+
+            const feedback = document.getElementById("feedback");
+            feedback.style.display = "block";
+
+            if (errors.length === 0) {
+                feedback.style.background = "rgba(74, 222, 128, 0.2)";
+                feedback.style.border = "1px solid var(--success)";
+                feedback.innerHTML = "✅ <b>Perfekt!</b> Alle Felder wurden korrekt aus dem Trace ausgelesen.";
+            } else {
+                feedback.style.background = "rgba(248, 113, 113, 0.2)";
+                feedback.style.border = "1px solid var(--error)";
+                feedback.innerHTML = "❌ <b>Fehler gefunden:</b><br> - " + errors.join("<br> - ");
+            }
+        }
+
+        window.addEventListener('load', generateTask);
+    </script>
+</body>
+</html>

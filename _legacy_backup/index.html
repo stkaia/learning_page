@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IHK Lern-Akademie</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ein bisschen Extra-Styling, falls die style.css noch nicht perfekt ist */
+        .grid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 30px; }
+        .modul-card { background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #3b82f6; width: 300px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .modul-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+        .modul-card h2 { color: #3b82f6; margin-top: 0; }
+        .start-btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; cursor: pointer; width: 100%; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container" style="text-align: center;">
+        <header>
+            <h1 style="color: #3b82f6; font-size: 2.5rem;">IHK Prüfungstrainer</h1>
+            <p style="font-size: 1.2rem;">Wähle ein Modul aus, um mit dem Lernen zu beginnen.</p>
+        </header>
+
+        <main id="modul-container" class="grid-container">
+            </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

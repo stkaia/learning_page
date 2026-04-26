@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Modul 1: Bit-Trainer</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f1f5f9; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; max-width: 800px; margin: auto; }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .bit-display { display: flex; gap: 10px; margin: 20px 0; padding: 20px; background: #000; border-radius: 8px; justify-content: center; }
+        .bit-group { position: relative; font-family: monospace; font-size: 1.5rem; color: #4ade80; text-align: center; }
+        .cut-line { width: 4px; height: 50px; background: #f87171; position: absolute; top: -10px; }
+        input { padding: 8px; margin: 10px 0; border-radius: 5px; width: 100px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <button class="btn" onclick="window.location.href='../index.html'">← Menü</button>
+        <h1>Modul 1: Der Bit-Detektiv</h1>
+        
+        <p id="question">Lade Aufgabe...</p>
+        
+        <label>Wie lautet der neue Präfix? (z.B. 58)</label><br>
+        <input type="number" id="ans-prefix"><br>
+        
+        <label>Wie lautet die Hexadezimale Schrittweite? (z.B. 40)</label><br>
+        <input type="text" id="ans-step"><br><br>
+        
+        <button class="btn" onclick="checkAnswer()">Prüfen</button>
+        <button class="btn" style="background:#64748b;" onclick="generateTask()">Neue Aufgabe</button>
+        
+        <div id="feedback" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let task = {};
+
+        function generateTask() {
+            const krummePrefixe = [51, 52, 54, 57, 58, 59, 61];
+            const target = krummePrefixe[Math.floor(Math.random() * krummePrefixe.length)];
+            const subnets = Math.pow(2, target - 48);
+            const step = Math.pow(2, 64 - target).toString(16);
+
+            task = { target, subnets, step };
+            
+            document.getElementById("question").innerHTML = 
+                `Du hast das Netz <b>...:3000::/48</b>.<br>Teile es in <b>${subnets}</b> Subnetze auf.`;
+            document.getElementById("feedback").innerHTML = "";
+        }
+
+        function checkAnswer() {
+            const p = document.getElementById("ans-prefix").value;
+            const s = document.getElementById("ans-step").value.toLowerCase();
+            const fb = document.getElementById("feedback");
+
+            if (parseInt(p) === task.target && s === task.step) {
+                fb.innerHTML = "<h3 style='color:#4ade80'>Korrekt!</h3>";
+            } else {
+                const rest = task.target % 4;
+                const pos = rest === 0 ? 4 : rest;
+                
+                fb.innerHTML = `
+                    <div style="background:#334155; padding:15px; border-radius:8px;">
+                        <h3 style='color:#f87171'>Fehler! Richtig wäre: /${task.target} mit Schrittweite ${task.step}</h3>
+                        <p>Dein neues Netz schneidet ein Hex-Zeichen genau hier durch (roter Strich):</p>
+                        <div class="bit-display">
+                            <div class="bit-group">
+                                0 0 0 0<br><span style="font-size:0.8rem; color:#94a3b8">8 4 2 1</span>
+                                <div class="cut-line" style="left: ${pos * 23}px;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        }
+        window.onload = generateTask;
+    </script>
+</body>
+</html>
