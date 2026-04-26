@@ -57,6 +57,13 @@ const modules = [
     desc: "Lerne RAID 0, 1, 5, 10 kennen und berechne Ausfallsicherheit & Kapazität.",
     link: "/tools/raid-simulator",
     icon: "💾"
+  },
+  {
+    id: "ai-tutor",
+    title: "KI-Prüfungstrainer (AP2)",
+    desc: "Interaktiver KI-Tutor für Fachinformatiker Systemintegration.",
+    link: "/tools/ai-tutor",
+    icon: "🤖"
   }
 ];
 
